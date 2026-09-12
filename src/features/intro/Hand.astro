@@ -1,0 +1,16 @@
+---
+import { handAssets, type HandSide } from './config';
+interface Props { side: HandSide }
+const { side } = Astro.props;
+const asset = handAssets[side];
+const tipX = asset.fingertip.x / asset.width * 100;
+const tipY = asset.fingertip.y / asset.height * 100;
+---
+<div class={`hand hand--${side}`} data-hand={side} style={`--tip-x:${tipX}%;--tip-y:${tipY}%`}>
+  <div class="hand-pose">
+    <div class="hand-registration">
+      <img class="hand-art" src={`${import.meta.env.BASE_URL}${asset.src}`} width={asset.width} height={asset.height} alt={asset.label} loading="eager" decoding="async" draggable="false" />
+      <span class="fingertip-anchor" data-fingertip={side} style={`left:${tipX}%;top:${tipY}%`}></span>
+    </div>
+  </div>
+</div>

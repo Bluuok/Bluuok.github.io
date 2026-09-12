@@ -1,0 +1,139 @@
+{
+  "results": [
+    {
+      "name": "desktop no horizontal overflow",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no development error overlay",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "both project slots exist",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "stage pinned at 0.3",
+      "pass": true,
+      "detail": {
+        "progress": "0.300",
+        "gap": 550.0652160644531,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "stage pinned at 0.55",
+      "pass": true,
+      "detail": {
+        "progress": "0.550",
+        "gap": 73.99281953461468,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "stage pinned at 0.69",
+      "pass": true,
+      "detail": {
+        "progress": "0.690",
+        "gap": 0.01899719424545765,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "fingertips meet within 2px",
+      "pass": true,
+      "detail": {
+        "progress": "0.690",
+        "gap": 0.01899719424545765,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "stage pinned at 0.83",
+      "pass": true,
+      "detail": {
+        "progress": "0.830",
+        "gap": 0.019055817276239395,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "stage pinned at 1",
+      "pass": true,
+      "detail": {
+        "progress": "1.000",
+        "gap": 0.019055817276239395,
+        "stageTop": 0.0009765625
+      }
+    },
+    {
+      "name": "reverse restores opening",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "skip reaches projects below fixed header",
+      "pass": true,
+      "detail": 116
+    },
+    {
+      "name": "project detail route works",
+      "pass": true,
+      "detail": "http://127.0.0.1:4321/projects/clawtide/"
+    },
+    {
+      "name": "return from detail preserves project anchor",
+      "pass": true,
+      "detail": 116
+    },
+    {
+      "name": "direct project hash survives pin initialization",
+      "pass": true,
+      "detail": 116
+    },
+    {
+      "name": "rapid wheel leaves body accessible",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "mobile no horizontal overflow",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "mobile fingertips meet",
+      "pass": true,
+      "detail": 0.011911887442835223
+    },
+    {
+      "name": "reduced motion has no pin spacer",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reduced motion has no long scroll intro",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "live reduced motion cleans up pin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "without JS projects remain accessible",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no runtime errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "name": "empty sections and intro off build successfully",
+      "pass": true
+    },
+    {
+      "name": "project detail without project section returns home",
+      "pass": true
+    },
+    {
+      "name": "particles can be disabled while paper hands remain",
+      "pass": true
+    },
+    {
+      "name": "default source and build are restored",
+      "pass": true
+    }
+  ]
+}

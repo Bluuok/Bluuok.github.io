@@ -1,0 +1,78 @@
+{
+  "results": [
+    {
+      "name": "standalone field mounts in unrelated container",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "scene input available independently of intro",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "configurable text pattern responds to proximity",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "external focus moves actual luminous mass",
+      "pass": true,
+      "detail": {
+        "x": 0.6991760095429528,
+        "y": 0.3985970260723204
+      }
+    },
+    {
+      "name": "fully faded field pauses",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reverse scene input resumes field",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "disconnect tears down field",
+      "pass": true,
+      "detail": "disconnected"
+    },
+    {
+      "name": "reconnecting remounts cleanly",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "short hex and rgb colors initialize",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "individual phase boundary can be overridden",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "per-instance disable creates no particles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "touch activates shape without requiring hover",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "touch shape releases automatically",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "isolation tests have no runtime errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

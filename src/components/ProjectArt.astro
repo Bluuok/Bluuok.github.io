@@ -1,0 +1,31 @@
+---
+interface Props { variant: 'orbit' | 'ribbon' }
+const { variant } = Astro.props;
+---
+<div class={`project-art art-${variant}`} aria-hidden="true">
+  {variant === 'orbit' ? <div class="orbital-object"><i class="orbit orbit-a"></i><i class="orbit orbit-b"></i><i class="orbit orbit-c"></i><i class="sphere"></i><i class="satellite"></i></div> : <div class="ribbon-object"><i></i><i></i><i></i><i></i><i></i></div>}
+  <span class="art-cross cross-a">+</span><span class="art-cross cross-b">+</span>
+</div>
+<style>
+  .project-art { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
+  .art-orbit { background: radial-gradient(ellipse at 65% 20%,#e6e5f6,transparent 70%),linear-gradient(135deg,#ecf1fa,#e6e9f3 70%,#f2eef9); }
+  .art-ribbon { background: radial-gradient(ellipse at 30% 45%,#ede5f7,transparent 60%),linear-gradient(135deg,#edf0f9,#efedf7 70%,#e9e9f4); }
+  .orbital-object { position: relative; width: 230px; height: 230px; transform: rotate(-28deg); transition: transform .7s; }
+  .project-art:hover .orbital-object { transform: rotate(-15deg) scale(1.04); }
+  .sphere { position: absolute; width: 125px; height: 125px; left: 53px; top: 53px; border-radius: 50%; background: radial-gradient(circle at 32% 25%,#fff 2%,#e9f0fb 24%,#bbc8e5 51%,#9d9ac1 72%,#dcd7ef 91%); box-shadow: inset -5px -7px 20px #a4a1d142,16px 35px 45px #8d94b14a; }
+  .orbit { position: absolute; width: 275px; height: 100px; top: 65px; left: -23px; border: 2px solid #fff; border-bottom: 6px solid #c5b9e4; border-right-color: #8faae0; border-radius: 50%; box-shadow: 0 3px 5px #8d98ba33,inset 0 2px 3px #8d98ba44; z-index: 2; transform: rotate(-12deg); }
+  .orbit-b { transform: rotate(65deg); z-index: 0; }
+  .orbit-c { transform: rotate(-65deg); opacity: .65; z-index: 0; }
+  .satellite { width: 24px; height: 24px; background: radial-gradient(circle at 30% 20%,white,#bcc6eb 50%,#a798cc); border-radius: 50%; position: absolute; left: 4px; top: 47px; box-shadow: 2px 3px 7px #a8a6ca77; }
+  .ribbon-object { width: 220px; height: 210px; transform: rotate(-28deg) skew(4deg, -4deg); position: relative; transition: transform .7s; }
+  .project-art:hover .ribbon-object { transform: rotate(-18deg) skew(4deg, -4deg) scale(1.03); }
+  .ribbon-object i { position: absolute; width: 178px; height: 110px; border: 20px solid #ddd8ef; border-top-color: #fefaff; border-right-color: #b4b9df; border-bottom-color: #c2b3d9; border-radius: 55%; left: 20px; box-shadow: 4px 9px 9px #9e94b924,inset 2px 4px 5px #9c9bbd38; }
+  .ribbon-object i:nth-child(1) { top: 110px; }
+  .ribbon-object i:nth-child(2) { top: 84px; }
+  .ribbon-object i:nth-child(3) { top: 58px; }
+  .ribbon-object i:nth-child(4) { top: 32px; }
+  .ribbon-object i:nth-child(5) { top: 6px; border-top-color: #fff; }
+  .art-cross { position: absolute; color: #9897b285; font: 16px monospace; }
+  .cross-a { left: 23px; top: 21px; }
+  .cross-b { right: 26px; bottom: 22px; }
+</style>

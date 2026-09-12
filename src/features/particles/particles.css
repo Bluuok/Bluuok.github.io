@@ -1,0 +1,72 @@
+particle-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+particle-field::before {
+  position: absolute;
+  left: var(--particle-shape-x, 50%);
+  top: var(--particle-shape-y, 70%);
+  width: min(80%, 1000px);
+  height: 52%;
+  transform: translate(-50%, -50%);
+  content: '';
+  background:
+    radial-gradient(ellipse at 50% 50%, rgb(123 149 190 / 18%), transparent 67%),
+    radial-gradient(ellipse at 50% 50%, rgb(163 157 200 / 8%), transparent 72%);
+  filter: blur(22px);
+  opacity: .7;
+  transition: opacity .35s ease;
+}
+
+particle-field[data-particle-phase='gather']::before,
+particle-field[data-particle-phase='core']::before,
+particle-field[data-particle-phase='fade']::before,
+particle-field[data-particle-phase='hidden']::before {
+  opacity: 0;
+}
+
+particle-field[hidden], particle-field[data-particle-state='disabled'] {
+  display: none;
+}
+
+.particle-field__canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: .92;
+  pointer-events: none;
+}
+
+.particle-field__hint {
+  position: absolute;
+  left: var(--particle-shape-x, 50%);
+  top: calc(var(--particle-shape-y, 70%) + var(--particle-shape-size, 184px) / 2 + 30px);
+  translate: -50% 0;
+  margin: 0;
+  white-space: nowrap;
+  color: #7b8190;
+  font: 9px var(--font-mono, monospace);
+  letter-spacing: .13em;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+particle-field[data-particle-phase='ambient'][data-shape-active='false'] .particle-field__hint { opacity: .68; }
+.particle-field__touch-hint { display: none; }
+@media (pointer: coarse) {
+  .particle-field__pointer-hint { display: none; }
+  .particle-field__touch-hint { display: inline; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .particle-field__canvas {
+    opacity: .5;
+  }
+  .particle-field__hint { display: none; }
+}

@@ -1,0 +1,263 @@
+{
+  "results": [
+    {
+      "name": "desktop no horizontal overflow",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no development error overlay",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "both project slots exist",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "paper assets decoded",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "two raster paper layers",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "upper-left and lower-right diagonal composition",
+      "pass": true,
+      "detail": {
+        "dx": 719.9976806640625,
+        "dy": 299.98858642578125
+      }
+    },
+    {
+      "name": "dense desktop particle field",
+      "pass": true,
+      "detail": "5200"
+    },
+    {
+      "name": "mouse activates field",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "approaching light dust activates shape",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "visible light concentrates into shape region",
+      "pass": true,
+      "detail": {
+        "massBefore": 323534,
+        "massAfter": 1414429
+      }
+    },
+    {
+      "name": "mouse leave releases field",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "mouse leave releases shape",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "shape disperses again",
+      "pass": true,
+      "detail": {
+        "massReleased": 333068,
+        "massAfter": 1414429
+      }
+    },
+    {
+      "name": "stage pinned at 0.3",
+      "pass": true,
+      "detail": {
+        "progress": "0.300",
+        "gap": 612.9057758780727,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "stage pinned at 0.55",
+      "pass": true,
+      "detail": {
+        "progress": "0.550",
+        "gap": 79.45249184233806,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "stage pinned at 0.69",
+      "pass": true,
+      "detail": {
+        "progress": "0.690",
+        "gap": 0.01326275828448874,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "fingertips meet within 2px",
+      "pass": true,
+      "detail": {
+        "progress": "0.690",
+        "gap": 0.01326275828448874,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "later stage concentrates light at fingertips",
+      "pass": true,
+      "detail": {
+        "focus": {
+          "x": 719.9986877441406,
+          "y": 540.1935119628906
+        },
+        "coreMass": 2864967,
+        "awayMass": 0
+      }
+    },
+    {
+      "name": "stage pinned at 0.83",
+      "pass": true,
+      "detail": {
+        "progress": "0.830",
+        "gap": 0.013322591950150613,
+        "stageTop": 0
+      }
+    },
+    {
+      "name": "stage pinned at 1",
+      "pass": true,
+      "detail": {
+        "progress": "1.000",
+        "gap": 0.013442291691779906,
+        "stageTop": 0.0009765625
+      }
+    },
+    {
+      "name": "reverse restores opening",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reverse scroll restores interactive shape",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "skip reaches projects below fixed header",
+      "pass": true,
+      "detail": 116
+    },
+    {
+      "name": "project detail route works",
+      "pass": true,
+      "detail": "http://127.0.0.1:4321/projects/clawtide/"
+    },
+    {
+      "name": "return from detail preserves project anchor",
+      "pass": true,
+      "detail": 116
+    },
+    {
+      "name": "direct project hash survives pin initialization",
+      "pass": true,
+      "detail": 116
+    },
+    {
+      "name": "offscreen particles pause",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "rapid wheel leaves body accessible",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "mobile no horizontal overflow",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "small viewport reduces workload",
+      "pass": true,
+      "detail": 1600
+    },
+    {
+      "name": "mobile fingertips meet",
+      "pass": true,
+      "detail": 0.006426124476626171
+    },
+    {
+      "name": "reduced motion has no pin spacer",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reduced motion freezes particles",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reduced motion pixels remain static on pointer",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reduced motion has no long scroll intro",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "live reduced motion cleans up pin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "without JS projects remain accessible",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "failed images remove pin safely",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "failed images never block projects",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "resize keeps fingertips aligned",
+      "pass": true,
+      "detail": 0.003884253558763994
+    },
+    {
+      "name": "640px uses matching desktop layout",
+      "pass": true,
+      "detail": {
+        "handWidth": 416,
+        "stageHeight": 900
+      }
+    },
+    {
+      "name": "640px fingertips meet",
+      "pass": true,
+      "detail": 0.007778331423725782
+    },
+    {
+      "name": "no runtime errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

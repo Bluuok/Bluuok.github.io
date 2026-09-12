@@ -1,0 +1,65 @@
+---
+import { site } from '../../data/site';
+import { features } from '../../config/features';
+import Hand from './Hand.astro';
+import ParticleField from '../particles/ParticleField.astro';
+import { introConfig } from './config';
+import './intro.css';
+const nextId = features.sections[0] ?? 'main';
+const layout = introConfig.desktop;
+const mobile = introConfig.mobile;
+const sceneStyles = [
+  `--contact-x:${layout.contact.x*100}%`, `--contact-y:${layout.contact.y*100}%`,
+  `--left-width:${layout.handWidth.left*100}%`, `--right-width:${layout.handWidth.right*100}%`,
+  `--left-angle:${layout.rotation.left}deg`, `--right-angle:${layout.rotation.right}deg`,
+  `--gap-x:${layout.gap.x*100}cqw`, `--gap-y:${layout.gap.y*100}cqh`,
+  `--mobile-contact-x:${mobile.contact.x*100}%`, `--mobile-contact-y:${mobile.contact.y*100}%`,
+  `--mobile-left-width:${mobile.handWidth.left*100}%`, `--mobile-right-width:${mobile.handWidth.right*100}%`,
+  `--mobile-left-angle:${mobile.rotation.left}deg`, `--mobile-right-angle:${mobile.rotation.right}deg`,
+  `--mobile-gap-x:${mobile.gap.x*100}cqw`, `--mobile-gap-y:${mobile.gap.y*100}cqh`,
+].join(';');
+const mobileLayoutStyles = `@media (width < ${introConfig.mobileBreakpoint}px) {
+  [data-intro] [data-stage] {
+    --contact-x:var(--mobile-contact-x); --contact-y:var(--mobile-contact-y);
+    --left-width:var(--mobile-left-width); --right-width:var(--mobile-right-width);
+    --left-angle:var(--mobile-left-angle); --right-angle:var(--mobile-right-angle);
+    --gap-x:var(--mobile-gap-x); --gap-y:var(--mobile-gap-y);
+  }
+}`;
+---
+<style is:inline set:html={mobileLayoutStyles}></style>
+<section class="intro" data-intro style={sceneStyles} aria-label="创造之触：滚动开场">
+  <div class="intro-stage" data-stage data-particle-host>
+    {features.particles && <ParticleField hint />}
+    <div class="intro-grain" aria-hidden="true"></div>
+    <div class="intro-copy" data-opening>
+      <p class="eyebrow"><span class="status-dot"></span>{site.eyebrow}</p>
+      <h1>{site.headline[0]}<br /><span class="iridescent-text">{site.headline[1]}</span></h1>
+      <p class="intro-description">{site.intro}</p>
+      <a class="button button-dark" href={`#${nextId}`}>探索我的作品 <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="scene" data-camera aria-hidden="true">
+      <div class="ambient-light" data-ambient></div>
+      <Hand side="left" />
+      <Hand side="right" />
+      <div class="contact-core" data-core></div>
+      <div class="light-ring" data-ring></div>
+    </div>
+    <div class="exposure" data-exposure aria-hidden="true"></div>
+    <div class="arrival" data-arrival aria-hidden="true">
+      <p class="eyebrow">FROM A SPARK, TO SOMETHING REAL</p>
+      <p class="arrival-title">让想法，<br />成为可以体验的作品。</p>
+      <p>接下来，是一些正在发生的创造。</p>
+    </div>
+    <div class="intro-bottom">
+      <span class="chapter-label">01 — THE FIRST SPARK</span>
+      <a class="scroll-cue" href={`#${nextId}`}><span class="scroll-line" aria-hidden="true"></span><span data-scroll-label>向下滚动，让灵感相遇</span></a>
+      <a class="skip-intro" href={`#${nextId}`}>跳过开场 <span aria-hidden="true">↓</span></a>
+    </div>
+  </div>
+</section>
+<script>
+  import { mountIntro } from './animation';
+  const root = document.querySelector<HTMLElement>('[data-intro]');
+  if (root) mountIntro(root);
+</script>

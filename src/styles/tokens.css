@@ -1,0 +1,14 @@
+:root {
+  --bg: #fafbfc;
+  --surface: #fff;
+  --ink: #24262b;
+  --muted: #6a6e79;
+  --line: #e4e6ec;
+  --blue: #537ce9;
+  --violet: #9371de;
+  --pink: #cd8fba;
+  --page-width: 1280px;
+  --page-gutter: clamp(24px, 5.5vw, 100px);
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, monospace;
+}

@@ -1,0 +1,67 @@
+---
+import type { ParticleFieldOptions } from './config';
+import './particles.css';
+
+type Props = ParticleFieldOptions & {
+  class?: string;
+  hint?: boolean;
+};
+
+const { class: className, hint = false, ...options } = Astro.props;
+const enabled = options.enabled ?? true;
+---
+
+<particle-field
+  class:list={['particle-field', className]}
+  data-particle-options={JSON.stringify(options)}
+  hidden={enabled ? undefined : true}
+  aria-hidden="true"
+>
+  <canvas class="particle-field__canvas"></canvas>
+  {hint && <p class="particle-field__hint">
+    <span class="particle-field__pointer-hint">靠近光尘，唤醒形状</span>
+    <span class="particle-field__touch-hint">轻触光尘，唤醒形状</span>
+  </p>}
+</particle-field>
+
+<script>
+  import { mountParticleField } from './field';
+  import type { ParticleFieldMount, ParticleSceneInput } from './field';
+  import type { ParticleFieldOptions } from './config';
+
+  class ParticleFieldElement extends HTMLElement {
+    cleanup?: ParticleFieldMount;
+
+    setScene(scene: ParticleSceneInput) {
+      this.cleanup?.setScene(scene);
+    }
+
+    resetScene() {
+      this.cleanup?.resetScene();
+    }
+
+    connectedCallback() {
+      if (this.cleanup || this.hidden) return;
+      const canvas = this.querySelector<HTMLCanvasElement>('canvas');
+      if (!canvas) return;
+
+      let options: ParticleFieldOptions = {};
+      try {
+        options = JSON.parse(this.dataset.particleOptions ?? '{}') as ParticleFieldOptions;
+      } catch {
+        this.dataset.particleState = 'invalid-config';
+      }
+      this.cleanup = mountParticleField(canvas, this, options);
+    }
+
+    disconnectedCallback() {
+      this.resetScene();
+      this.cleanup?.();
+      this.cleanup = undefined;
+    }
+  }
+
+  if (!customElements.get('particle-field')) {
+    customElements.define('particle-field', ParticleFieldElement);
+  }
+</script>
