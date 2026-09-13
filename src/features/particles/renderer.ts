@@ -71,11 +71,11 @@ export function createParticleRenderer(canvas: HTMLCanvasElement, colors: readon
     bloomContext.save();
     bloomContext.scale(bloomScale, bloomScale);
     for (const particle of particles) {
-      if (particle.alpha <= .01) continue;
+      if (particle.alpha <= .01 || particle.depth < .9) continue;
       const sprite = sprites[particle.colorIndex % sprites.length] ?? sprites[0];
       if (!sprite) continue;
-      const size = (8 + particle.radius * 12) * (.65 + particle.depth * .7);
-      bloomContext.globalAlpha = particle.alpha * opacity * (.36 + bloom * .6);
+      const size = (2 + particle.radius * 3);
+      bloomContext.globalAlpha = particle.alpha * opacity * (.12 + bloom * .45);
       bloomContext.drawImage(sprite.glow, particle.x - size / 2, particle.y - size / 2, size, size);
     }
     bloomContext.restore();
@@ -88,10 +88,10 @@ export function createParticleRenderer(canvas: HTMLCanvasElement, colors: readon
       if (particle.alpha <= .01) continue;
       const sprite = sprites[particle.colorIndex % sprites.length] ?? sprites[0];
       if (!sprite) continue;
-      const size = (1.5 + particle.radius * 2.4) * (.65 + particle.depth * .6);
+      const size = particle.radius * 2;
       context.globalAlpha = Math.min(1, particle.alpha * opacity * (1 + particle.depth * .7));
       if (particle.streak && Math.abs(particle.vx) + Math.abs(particle.vy) > .5) {
-        context.strokeStyle = '#fff';
+        context.strokeStyle = colors[particle.colorIndex % colors.length] ?? '#698cf5';
         context.lineWidth = Math.max(.45, particle.radius * .65);
         context.beginPath();
         context.moveTo(particle.x, particle.y);
@@ -99,11 +99,10 @@ export function createParticleRenderer(canvas: HTMLCanvasElement, colors: readon
         const tail = Math.min(9, speed * 1.2);
         context.lineTo(particle.x - particle.vx / speed * tail, particle.y - particle.vy / speed * tail);
         context.stroke();
-      } else if (particle.depth > .86) {
-        context.drawImage(sprite.core, particle.x - size / 2, particle.y - size / 2, size, size);
       } else {
-        // Subpixel white glints avoid thousands of tiny sprite resamples per frame.
-        const glint = size * .48;
+        // Diameter is measured directly in CSS pixels, without a large disk.
+        context.fillStyle = colors[particle.colorIndex % colors.length] ?? '#698cf5';
+        const glint = size;
         context.fillRect(particle.x - glint / 2, particle.y - glint / 2, glint, glint);
       }
     }

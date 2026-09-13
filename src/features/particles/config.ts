@@ -43,13 +43,13 @@ export interface ParticleFieldConfig {
 
 export const particleFieldDefaults: Readonly<ParticleFieldConfig> = {
   enabled: true,
-  count: 5200,
-  mobileCount: 1600,
+  count: 8200,
+  mobileCount: 2400,
   density: 1,
-  maxParticles: 6400,
+  maxParticles: 10000,
   referenceArea: 1440 * 1000,
-  minRadius: .22,
-  maxRadius: .78,
+  minRadius: .35,
+  maxRadius: .65,
   returnForce: .007,
   shapeForce: .035,
   gatherForce: .024,
@@ -68,7 +68,7 @@ export const particleFieldDefaults: Readonly<ParticleFieldConfig> = {
     particleRatio: .46,
   },
   phases: { shapeEnd: .28, gatherEnd: .7, coreEnd: .76, fadeEnd: .92 },
-  colors: ['#7188b0'],
+  colors: ['#698cf5', '#9c79ec', '#60b9e6'],
 };
 
 export type ParticleFieldOptions = Partial<

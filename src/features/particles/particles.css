@@ -8,29 +8,6 @@ particle-field {
   contain: strict;
 }
 
-particle-field::before {
-  position: absolute;
-  left: var(--particle-shape-x, 50%);
-  top: var(--particle-shape-y, 70%);
-  width: min(80%, 1000px);
-  height: 52%;
-  transform: translate(-50%, -50%);
-  content: '';
-  background:
-    radial-gradient(ellipse at 50% 50%, rgb(123 149 190 / 18%), transparent 67%),
-    radial-gradient(ellipse at 50% 50%, rgb(163 157 200 / 8%), transparent 72%);
-  filter: blur(22px);
-  opacity: .7;
-  transition: opacity .35s ease;
-}
-
-particle-field[data-particle-phase='gather']::before,
-particle-field[data-particle-phase='core']::before,
-particle-field[data-particle-phase='fade']::before,
-particle-field[data-particle-phase='hidden']::before {
-  opacity: 0;
-}
-
 particle-field[hidden], particle-field[data-particle-state='disabled'] {
   display: none;
 }

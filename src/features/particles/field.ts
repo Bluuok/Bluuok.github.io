@@ -1,3 +1,4 @@
+import { pointerConfig, pointerInfluence } from './interaction';
 import { resolveParticleFieldConfig, type NormalizedPoint, type ParticleFieldOptions } from './config';
 import { createParticleRenderer, type RenderParticle } from './renderer';
 import { createShapeTargets, type ShapeTarget } from './targets';
@@ -60,6 +61,7 @@ export function mountParticleField(
   let particles: Particle[] = [];
   let pointer: { x: number; y: number; type: string } | null = null;
   let touchActiveUntil = 0;
+  let pointerFocus: { x: number; y: number } | null = null;
   let shapeMix = 0;
   let shapeReported = false;
   let phaseReported = '';
@@ -141,7 +143,7 @@ export function mountParticleField(
     const fade = sceneProgress <= coreEnd ? 1 : 1 - smooth((sceneProgress - coreEnd) / Math.max(.001, fadeEnd - coreEnd));
     const bloom = sceneProgress < shapeEnd ? shapeMix * .45 : smooth((sceneProgress - (gatherEnd - .2)) / .2);
     for (const particle of particles) {
-      particle.alpha = fade * (.26 + particle.depth * .5) *
+      particle.alpha = fade * (.55 + particle.depth * .4) *
         (.88 + Math.sin(time * .0012 * particle.twinkle + particle.phase) * .12);
     }
     renderer.render(particles, config.opacity, bloom);
@@ -166,11 +168,7 @@ export function mountParticleField(
       host.dataset.pointerActive = 'false';
       return 0;
     }
-    const centerX = config.shape.center.x * width;
-    const centerY = config.shape.center.y * height;
-    const distance = Math.hypot(pointer.x - centerX, pointer.y - centerY);
-    const normalized = distance / config.shape.triggerRadius;
-    return normalized <= .65 ? 1 : smooth((1 - normalized) / .35);
+    return 1;
   };
 
   const update = (time: number) => {
@@ -179,14 +177,18 @@ export function mountParticleField(
     const wantedShape = pointerStrength(time);
     shapeMix += (wantedShape - shapeMix) * (wantedShape > shapeMix ? .085 : .035) * delta;
     reportShape(shapeMix > .16);
+    if (pointer) {
+      pointerFocus ??= { x: pointer.x, y: pointer.y };
+      const follow = 1 - Math.pow(1 - pointerConfig.follow, delta);
+      pointerFocus.x += (pointer.x - pointerFocus.x) * follow;
+      pointerFocus.y += (pointer.y - pointerFocus.y) * follow;
+    } else if (shapeMix < .001) pointerFocus = null;
 
     const gathering = smooth((sceneProgress - config.phases.shapeEnd) /
       Math.max(.001, config.phases.gatherEnd - config.phases.shapeEnd));
     const focus = sceneFocus ?? { x: .5, y: .63 };
     const focusX = focus.x * width;
     const focusY = focus.y * height;
-    const shapeX = config.shape.center.x * width;
-    const shapeY = config.shape.center.y * height;
     const force = config.returnForce + shapeMix * config.shapeForce + gathering * config.gatherForce;
 
     for (const particle of particles) {
@@ -194,11 +196,13 @@ export function mountParticleField(
       particle.orbitAngle += (.0025 + particle.depth * .0035) * delta;
       let targetX = particle.homeX + Math.cos(particle.phase) * config.drift * 34;
       let targetY = particle.homeY + Math.sin(particle.phase * .83) * config.drift * 28;
-      if (particle.shapeTarget && shapeMix > .001) {
-        const shapedX = shapeX + particle.shapeTarget.x;
-        const shapedY = shapeY + particle.shapeTarget.y;
-        targetX += (shapedX - targetX) * shapeMix;
-        targetY += (shapedY - targetY) * shapeMix;
+      if (pointerConfig.mode === 'shape' && particle.shapeTarget && pointerFocus && shapeMix > .001) {
+        targetX += (pointerFocus.x + particle.shapeTarget.x - targetX) * shapeMix;
+        targetY += (pointerFocus.y + particle.shapeTarget.y - targetY) * shapeMix;
+      } else if (pointerFocus && shapeMix > .001) {
+        const influence = pointerInfluence(particle.homeX, particle.homeY, pointerFocus.x, pointerFocus.y) * shapeMix;
+        targetX += (pointerFocus.x - targetX) * influence;
+        targetY += (pointerFocus.y - targetY) * influence;
       }
       if (gathering > .001) {
         const localGather = smooth((gathering - particle.gatherDelay) / (1 - particle.gatherDelay));
@@ -259,13 +263,17 @@ export function mountParticleField(
     const bounds = host.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    if (x < 0 || y < 0 || x > bounds.width || y > bounds.height) return;
+    if (x < 0 || y < 0 || x > bounds.width || y > bounds.height) {
+      pointer = null;
+      host.dataset.pointerActive = 'false';
+      return;
+    }
     pointer = { x, y, type: event.pointerType };
     if (event.pointerType === 'touch') touchActiveUntil = performance.now() + 1600;
     host.dataset.pointerActive = 'true';
   };
   const clearPointer = (event?: PointerEvent) => {
-    if (event?.pointerType === 'touch' && performance.now() < touchActiveUntil) return;
+    if (event?.type !== 'pointercancel' && event?.pointerType === 'touch' && performance.now() < touchActiveUntil) return;
     pointer = null;
     host.dataset.pointerActive = 'false';
   };
