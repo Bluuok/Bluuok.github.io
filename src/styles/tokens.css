@@ -1,14 +1,35 @@
 :root {
   --bg: #fafbfc;
-  --surface: #fff;
+  --surface: #ffffff;
+  --surface-raised: #f4f5f8;
+  --surface-overlay: rgba(250, 251, 252, 0.88);
   --ink: #24262b;
+  --fg: #24262b;
   --muted: #6a6e79;
+  --muted-light: #9ea2ae;
   --line: #e4e6ec;
+  --border: #e4e6ec;
+  --border-subtle: #edf0f5;
+  --border-strong: #cfd3dc;
   --blue: #537ce9;
+  --accent-blue: #537ce9;
   --violet: #9371de;
+  --accent-violet: #9371de;
   --pink: #cd8fba;
+  --accent-pink: #cd8fba;
+  --tint-blue: rgba(83, 124, 233, 0.08);
+  --tint-violet: rgba(147, 113, 222, 0.08);
+  --tint-pink: rgba(205, 143, 186, 0.08);
   --page-width: 1280px;
+  --content-max-width: 1280px;
   --page-gutter: clamp(24px, 5.5vw, 100px);
-  --font-sans: 'Inter', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, monospace;
+  --page-padding: clamp(24px, 5.5vw, 100px);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", 'PingFang SC', 'Microsoft YaHei', 'Inter', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'SFMono-Regular', 'JetBrains Mono', Consolas, monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }

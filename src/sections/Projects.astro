@@ -2,7 +2,20 @@
 import { projects } from '../data/projects';
 import ProjectCard from '../components/ProjectCard.astro';
 ---
-<section id="projects" class="section container" aria-labelledby="projects-title">
-  <div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2 id="projects-title">一些想法，正在成形。</h2></div><p class="section-note">从一个念头，到一次尝试。<br />我的作品，持续生长中。</p></div>
-  <div class="projects-grid">{projects.map(project => <ProjectCard project={project} />)}</div>
-</section>
+{projects.length > 0 && <section id="projects" class="section container" aria-labelledby="projects-title">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">01 / SELECTED WORK</p>
+      <h2 id="projects-title">精选作品</h2>
+    </div>
+    <p class="section-note">
+      从一个念头开始，<br />
+      做一些能被使用的作品。
+    </p>
+  </div>
+  <div class="projects-grid">
+    {projects.map((project) => (
+      <ProjectCard project={project} />
+    ))}
+  </div>
+</section>}

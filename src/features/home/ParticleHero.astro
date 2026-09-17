@@ -1,0 +1,28 @@
+---
+import ParticleField from '../particles/ParticleField.astro';
+import { site } from '../../data/site';
+import { url } from '../../lib/urls';
+import { features } from '../../config/features';
+import { projects } from '../../data/projects';
+
+const hasProjects = features.sections.includes('projects') && projects.length > 0;
+const projectsHref = hasProjects ? url('#projects') : url('playground/');
+---
+<section class="particle-hero" aria-labelledby="hero-title">
+  {features.particles && <ParticleField class="hero-particle-field" />}
+  <div class="container hero-content">
+    <p class="eyebrow">{site.eyebrow}</p>
+    <h1 id="hero-title">
+      {site.headline[0]}<br />{site.headline[1]}
+    </h1>
+    <p class="hero-intro">{site.intro}</p>
+    <div class="hero-actions">
+      <a class="button button-dark" href={projectsHref}>
+        {hasProjects ? '查看精选作品' : '浏览小作品与实验'} <span>↓</span>
+      </a>
+      {hasProjects && <a class="button button-outline" href={url('playground/')}>
+        小作品与实验 <span>↗</span>
+      </a>}
+    </div>
+  </div>
+</section>

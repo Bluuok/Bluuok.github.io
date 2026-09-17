@@ -1,25 +1,33 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { introConfig, type SceneLayout } from './config';
+import { introConfig } from './config';
+import { subscribeMotion, getMotionState, type MotionState } from '../../lib/motion';
 
 interface ParticleSceneElement extends HTMLElement {
   setScene?: (scene: { progress: number; focus?: { x: number; y: number } | null }) => void;
   resetScene?: () => void;
 }
 
-export function mountIntro(root: HTMLElement) {
+export interface MountIntroOptions {
+  id?: string;
+  onUpdate?: (progress: number) => void;
+}
+
+export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
   gsap.registerPlugin(ScrollTrigger);
+  const triggerId = options.id ?? 'creation-intro';
   const query = (selector: string) => root.querySelector<HTMLElement>(selector)!;
   const stage = query('[data-stage]');
-  const particleField = root.querySelector<ParticleSceneElement>('particle-field');
+  const particleField = root.querySelector<ParticleSceneElement>('[data-particle-host], particle-field');
   const fingertips = [...root.querySelectorAll<HTMLElement>('[data-fingertip]')];
-  const opening = query('[data-opening]');
-  const arrival = query('[data-arrival]');
-  const media = gsap.matchMedia();
+  const opening = root.querySelector<HTMLElement>('[data-opening]');
+  const arrival = root.querySelector<HTMLElement>('[data-arrival]');
   const images = [...root.querySelectorAll<HTMLImageElement>('.hand-art')];
   let disposed = false;
   let lastFocusRead = 0;
   let particleFocus: { x: number; y: number } | null = null;
+  let activeTimeline: gsap.core.Timeline | null = null;
+
   const updateParticleScene = (progress: number) => {
     if (!particleField?.setScene) return;
     const now = performance.now();
@@ -37,43 +45,112 @@ export function mountIntro(root: HTMLElement) {
     }
     particleField.setScene({ progress, focus: particleFocus });
   };
-  if (particleField) customElements.whenDefined('particle-field').then(() => {
-    if (!disposed) updateParticleScene(Number(root.dataset.progress ?? 0));
-  });
+
+  if (particleField) {
+    if (particleField.setScene) {
+      if (!disposed) updateParticleScene(Number(root.dataset.progress ?? 0));
+    } else if (typeof customElements !== 'undefined' && customElements.get('particle-field')) {
+      if (!disposed) updateParticleScene(Number(root.dataset.progress ?? 0));
+    } else if (typeof customElements !== 'undefined') {
+      customElements.whenDefined('particle-field').then(() => {
+        if (!disposed) updateParticleScene(Number(root.dataset.progress ?? 0));
+      });
+    }
+  }
+
+  const killTimeline = () => {
+    const st = activeTimeline?.scrollTrigger ?? ScrollTrigger.getById(triggerId);
+    st?.kill(true);
+    if (activeTimeline) {
+      activeTimeline.revert();
+      activeTimeline = null;
+    }
+    gsap.set(root.querySelectorAll('[data-camera], [data-hand], [data-opening], [data-arrival], [data-ambient], [data-core], [data-ring], [data-exposure]'), { clearProps: 'transform,opacity' });
+    delete root.dataset.progress;
+    particleFocus = null;
+    lastFocusRead = 0;
+  };
+
   const restoreStatic = () => {
     root.dataset.artState = 'unavailable';
-    media.revert();
-    opening.inert = false;
-    opening.removeAttribute('aria-hidden');
+    killTimeline();
+    if (opening) {
+      opening.inert = false;
+      opening.removeAttribute('aria-hidden');
+    }
+    if (arrival) {
+      arrival.setAttribute('aria-hidden', 'true');
+    }
     particleField?.resetScene?.();
   };
-  const buildTimeline = (layout: SceneLayout) => {
-    if (root.dataset.artState === 'unavailable') return;
+
+  const applyStaticReducedPose = () => {
+    killTimeline();
+    root.dataset.artState = 'static-reduced';
+    if (opening) {
+      opening.inert = false;
+      opening.removeAttribute('aria-hidden');
+      gsap.set(opening, { opacity: 1, y: 0 });
+    }
+    if (arrival) {
+      arrival.setAttribute('aria-hidden', 'true');
+      gsap.set(arrival, { opacity: 0 });
+    }
+    const exposure = root.querySelector<HTMLElement>('[data-exposure]');
+    if (exposure) gsap.set(exposure, { opacity: 0 });
+    const core = root.querySelector<HTMLElement>('[data-core]');
+    if (core) gsap.set(core, { opacity: 0 });
+    const ring = root.querySelector<HTMLElement>('[data-ring]');
+    if (ring) gsap.set(ring, { opacity: 0 });
+    const left = root.querySelector<HTMLElement>('[data-hand="left"]');
+    const right = root.querySelector<HTMLElement>('[data-hand="right"]');
+    if (left) gsap.set(left, { x: 0, y: 0 });
+    if (right) gsap.set(right, { x: 0, y: 0 });
+    particleField?.resetScene?.();
+  };
+
+  const buildTimeline = () => {
+    if (disposed || root.dataset.artState === 'unavailable') return;
+    killTimeline();
+
+    const isMobile = window.innerWidth < introConfig.mobileBreakpoint;
+    const layout = isMobile ? introConfig.mobile : introConfig.desktop;
+
     const camera = query('[data-camera]');
     const left = query('[data-hand="left"]');
     const right = query('[data-hand="right"]');
     const t = introConfig.timing;
     const gapX = () => stage.clientWidth * layout.gap.x;
     const gapY = () => stage.clientHeight * layout.gap.y;
-    const timeline = gsap.timeline({
+
+    activeTimeline = gsap.timeline({
       defaults: { ease: 'none' },
       scrollTrigger: {
-        id: 'creation-intro', trigger: root, pin: stage, start: 'top top',
+        id: triggerId,
+        trigger: root,
+        pin: stage,
+        start: 'top top',
         end: () => `+=${window.innerHeight * layout.scrollScreens}`,
-        scrub: introConfig.scrub, invalidateOnRefresh: true,
+        scrub: introConfig.scrub,
+        invalidateOnRefresh: true,
       },
       onUpdate: () => {
-        const progress = timeline.progress();
+        if (!activeTimeline) return;
+        const progress = activeTimeline.progress();
         root.dataset.progress = progress.toFixed(3);
         updateParticleScene(progress);
-        opening.inert = progress > .36;
-        opening.setAttribute('aria-hidden', String(progress > .36));
-        arrival.setAttribute('aria-hidden', String(progress < .88));
+        if (options.onUpdate) options.onUpdate(progress);
+        if (opening) {
+          opening.inert = progress > .36;
+          opening.setAttribute('aria-hidden', String(progress > .36));
+        }
+        if (arrival) {
+          arrival.setAttribute('aria-hidden', String(progress < .88));
+        }
       },
     });
-    // Animate the registered fingertip origin; artwork size/rotation are separate.
-    // fromTo also recalculates the starting offsets on viewport refresh.
-    timeline
+
+    activeTimeline
       .to(opening, { opacity: 0, y: -28, duration: t.titleDuration }, t.titleOut)
       .fromTo(left, { x: () => -gapX(), y: () => -gapY() }, { x: 0, y: 0, duration: t.approachDuration, ease: 'power1.inOut' }, t.approach)
       .fromTo(right, { x: gapX, y: gapY }, { x: 0, y: 0, duration: t.approachDuration, ease: 'power1.inOut' }, t.approach)
@@ -84,29 +161,62 @@ export function mountIntro(root: HTMLElement) {
       .to(query('[data-exposure]'), { opacity: 1, duration: t.exposureDuration, ease: 'sine.inOut' }, t.exposure)
       .to(camera, { opacity: 0, duration: .16 }, t.exposure)
       .fromTo(arrival, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: t.arrivalDuration }, t.arrival);
-    return () => {
-      opening.inert = false;
-      opening.removeAttribute('aria-hidden');
-      arrival.setAttribute('aria-hidden', 'true');
-      particleField?.resetScene?.();
-      particleFocus = null;
-      lastFocusRead = 0;
-      delete root.dataset.progress;
-    };
   };
-  media.add(`(prefers-reduced-motion: no-preference) and (min-width: ${introConfig.mobileBreakpoint}px)`, () => buildTimeline(introConfig.desktop));
-  media.add(`(prefers-reduced-motion: no-preference) and (width < ${introConfig.mobileBreakpoint}px)`, () => buildTimeline(introConfig.mobile));
+
+  // Determine initial state: single source of truth from motion.ts
+  const initialMotion = getMotionState();
+  if (initialMotion.isReduced) {
+    applyStaticReducedPose();
+  } else {
+    buildTimeline();
+  }
+
+  // Subscribe to unified motion controller without competing gsap.matchMedia
+  const unsubMotion = subscribeMotion((state: MotionState) => {
+    if (disposed) return;
+    if (state.isReduced) {
+      applyStaticReducedPose();
+    } else {
+      if (root.dataset.artState === 'static-reduced' || !activeTimeline) {
+        root.dataset.artState = 'ready';
+        buildTimeline();
+        ScrollTrigger.refresh();
+      }
+    }
+  });
+
+  const breakpoint = window.matchMedia(`(min-width: ${introConfig.mobileBreakpoint}px)`);
+  const onBreakpoint = () => {
+    if (disposed || getMotionState().isReduced) return;
+    const previousTrigger = ScrollTrigger.getById(triggerId);
+    const wasActive = previousTrigger?.isActive ?? false;
+    const progress = activeTimeline?.progress() ?? 0;
+    buildTimeline();
+    ScrollTrigger.refresh();
+    const trigger = ScrollTrigger.getById(triggerId);
+    if (trigger && wasActive) {
+      window.scrollTo({ top: trigger.start + (trigger.end - trigger.start) * progress, behavior: 'instant' });
+      trigger.update();
+      activeTimeline?.progress(progress);
+    }
+  };
+  breakpoint.addEventListener('change', onBreakpoint);
+
   for (const image of images) image.addEventListener('error', restoreStatic);
   Promise.all(images.map(image => image.decode())).then(() => {
-    if (!disposed) root.dataset.artState = 'ready';
+    if (!disposed && root.dataset.artState !== 'static-reduced') root.dataset.artState = 'ready';
   }).catch(() => { if (!disposed) restoreStatic(); });
+
   const cleanup = () => {
     disposed = true;
+    unsubMotion();
+    breakpoint.removeEventListener('change', onBreakpoint);
     particleField?.resetScene?.();
-    media.revert();
+    killTimeline();
     for (const image of images) image.removeEventListener('error', restoreStatic);
     document.removeEventListener('astro:before-swap', cleanup);
   };
+
   document.addEventListener('astro:before-swap', cleanup, { once: true });
   return cleanup;
 }

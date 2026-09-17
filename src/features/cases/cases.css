@@ -1,0 +1,726 @@
+/* ==========================================================================
+   Cases Scoped Styles: Clawtide & ThreadCove
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Shared Case Typography & Utilities
+   -------------------------------------------------------------------------- */
+.case-page {
+  padding-block: 40px 110px;
+}
+
+.case-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tag {
+  font: 11px/1.4 var(--font-mono);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  color: var(--muted);
+}
+
+.next-project-banner {
+  margin-top: 80px;
+  padding: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.next-project-banner h3 {
+  font-size: 24px;
+  font-weight: 500;
+  margin-block: 8px 6px;
+}
+
+.next-project-banner p {
+  color: var(--muted);
+  font-size: 14.5px;
+}
+
+/* ==========================================================================
+   Clawtide: Warm Ivory Ceramic Incised Grooves Apparatus
+   ========================================================================== */
+.case-clawtide .case-hero {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 48px;
+  align-items: start;
+  padding-bottom: 70px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.case-clawtide .case-hero-copy h1 {
+  font-size: clamp(38px, 5.5vw, 68px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  margin-block: 16px 20px;
+  color: #17241d;
+}
+
+.case-clawtide .case-summary {
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.case-clawtide .case-desc {
+  font-size: 14.5px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 24px;
+}
+
+/* Ceramic Stage Card */
+.case-clawtide .ceramic-stage-card {
+  background: #faf8f3;
+  border: 1px solid #e7e2d5;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: 0 16px 40px -12px rgba(35, 45, 38, 0.08);
+  position: relative;
+}
+
+.case-clawtide .ceramic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ebe6da;
+  margin-bottom: 18px;
+}
+
+.case-clawtide .ceramic-title {
+  font: 11px/1 var(--font-mono);
+  color: #233b2e;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+
+.case-clawtide .ceramic-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.case-clawtide .ceramic-tab {
+  background: #eeebe1;
+  border: 1px solid #ddd7ca;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font: 12px/1.4 var(--font-mono);
+  color: #495e51;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.case-clawtide .ceramic-tab:hover {
+  background: #e4e0d4;
+  color: #1e3327;
+}
+
+.case-clawtide .ceramic-tab[aria-selected="true"] {
+  background: #1f3b2e;
+  color: #ffffff;
+  border-color: #1f3b2e;
+  box-shadow: 0 2px 8px rgba(31, 59, 46, 0.25);
+}
+
+/* Ceramic SVG Canvas */
+.case-clawtide .ceramic-canvas-wrap {
+  width: 100%;
+  aspect-ratio: 540 / 320;
+  background: #f4f1e8;
+  border: 1px solid #ded8cb;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(30, 25, 15, 0.04);
+}
+
+.case-clawtide .ceramic-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Grooves state & pulses */
+.case-clawtide .groove-pulse {
+  transition: opacity 0.3s ease, stroke-width 0.3s ease;
+  opacity: 0.25;
+}
+
+.case-clawtide .groove-label {
+  font: 10px var(--font-mono);
+  fill: #857e72;
+  letter-spacing: 0.06em;
+  transition: fill 0.3s ease;
+}
+
+/* Active tab groove highlight via CSS :has and data-active fallback */
+.case-clawtide .ceramic-stage-card[data-active="web"] #pulse-web,
+.case-clawtide .ceramic-stage-card:has(#tab-web[aria-selected="true"]) #pulse-web {
+  opacity: 1;
+  stroke: #1f3b2e;
+  stroke-width: 3.5;
+}
+
+.case-clawtide .ceramic-stage-card[data-active="web"] #label-web,
+.case-clawtide .ceramic-stage-card:has(#tab-web[aria-selected="true"]) #label-web {
+  fill: #1f3b2e;
+  font-weight: 600;
+}
+
+.case-clawtide .ceramic-stage-card[data-active="im"] #pulse-im,
+.case-clawtide .ceramic-stage-card:has(#tab-im[aria-selected="true"]) #pulse-im {
+  opacity: 1;
+  stroke: #2e5c46;
+  stroke-width: 3.5;
+}
+
+.case-clawtide .ceramic-stage-card[data-active="im"] #label-im,
+.case-clawtide .ceramic-stage-card:has(#tab-im[aria-selected="true"]) #label-im {
+  fill: #2e5c46;
+  font-weight: 600;
+}
+
+.case-clawtide .ceramic-stage-card[data-active="cron"] #pulse-cron,
+.case-clawtide .ceramic-stage-card:has(#tab-cron[aria-selected="true"]) #pulse-cron {
+  opacity: 1;
+  stroke: #45785f;
+  stroke-width: 3.5;
+}
+
+.case-clawtide .ceramic-stage-card[data-active="cron"] #label-cron,
+.case-clawtide .ceramic-stage-card:has(#tab-cron[aria-selected="true"]) #label-cron {
+  fill: #45785f;
+  font-weight: 600;
+}
+
+/* Panels */
+.case-clawtide .ceramic-panel {
+  margin-top: 18px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #ebe5d8;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px -2px rgba(35, 45, 38, 0.03);
+}
+
+.case-clawtide .ceramic-stage-card.has-js .ceramic-panel[hidden] {
+  display: none !important;
+}
+
+.case-clawtide .ceramic-panel h4 {
+  font-size: 14.5px;
+  color: #1f3b2e;
+  margin-bottom: 4px;
+}
+
+.case-clawtide .ceramic-panel p {
+  font-size: 13.5px;
+  color: #55665b;
+  line-height: 1.7;
+}
+
+/* Clawtide Mechanism & Tradeoffs */
+.case-clawtide .case-section {
+  padding-block: 70px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.case-clawtide .case-section h2 {
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-block: 10px 36px;
+}
+
+.case-clawtide .mechanism-pipeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.case-clawtide .pipe-step {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.case-clawtide .pipe-num {
+  font: 11px var(--font-mono);
+  color: #2e5c46;
+  margin-bottom: 12px;
+}
+
+.case-clawtide .pipe-step h3 {
+  font-size: 16.5px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.case-clawtide .pipe-step p {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.case-clawtide .tradeoffs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.case-clawtide .tradeoff-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid #1f3b2e;
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.case-clawtide .tradeoff-card h3 {
+  font-size: 16.5px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.case-clawtide .tradeoff-summary {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.case-clawtide .tradeoff-detail {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 14px;
+}
+
+.case-clawtide .tradeoff-ref {
+  font: 11px var(--font-mono);
+  color: #2e5c46;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   ThreadCove: Editorial Dossier Masthead & Layered Paper Desk
+   ========================================================================== */
+
+/* Top Editorial Masthead (Full Width) */
+.case-threadcove .dossier-masthead-hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 40px;
+  align-items: start;
+  padding-bottom: 50px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.case-threadcove .dossier-hero-copy h1 {
+  font-size: clamp(38px, 5.5vw, 68px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  margin-block: 14px 18px;
+  color: #0f172a;
+}
+
+.case-threadcove .case-summary {
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.case-threadcove .case-desc {
+  font-size: 14.5px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 24px;
+}
+
+/* Dossier Meta Box (Right Side of Masthead) */
+.case-threadcove .dossier-meta-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #2563eb;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: 0 10px 28px -6px rgba(15, 23, 42, 0.05);
+}
+
+.case-threadcove .dossier-meta-header {
+  font: 11px/1.4 var(--font-mono);
+  color: #2563eb;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e2e8f0;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.case-threadcove .dossier-meta-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.case-threadcove .dossier-meta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 12.5px;
+}
+
+.case-threadcove .dossier-meta-label {
+  font: 11px var(--font-mono);
+  color: #64748b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.case-threadcove .dossier-meta-value {
+  font: 12px var(--font-mono);
+  color: #1e293b;
+  text-align: right;
+}
+
+.case-threadcove .dossier-meta-value a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Layered Paper Desk Stage */
+.case-threadcove .paper-desk-stage {
+  margin-top: 50px;
+  background: #eef3f8;
+  border: 1px solid #cbdbe8;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: 0 16px 44px -12px rgba(15, 23, 42, 0.06);
+}
+
+.case-threadcove .paper-desk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #d8e5f0;
+  margin-bottom: 24px;
+}
+
+.case-threadcove .paper-desk-title {
+  font: 11px var(--font-mono);
+  color: #1e3a8a;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+
+/* Staggered Paper Sheets Tablist */
+.case-threadcove .paper-sheets-wrap {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.case-threadcove .paper-sheet {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+  box-shadow: 0 6px 18px -4px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+  text-align: left;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+}
+
+/* Subtle editorial paper rotation */
+.case-threadcove .paper-sheet:nth-child(1) { transform: rotate(-1.6deg); }
+.case-threadcove .paper-sheet:nth-child(2) { transform: rotate(1.2deg); }
+.case-threadcove .paper-sheet:nth-child(3) { transform: rotate(-0.8deg); }
+.case-threadcove .paper-sheet:nth-child(4) { transform: rotate(1.5deg); }
+
+.case-threadcove .paper-sheet:hover {
+  transform: translateY(-4px) scale(1.01);
+  border-color: #60a5fa;
+  box-shadow: 0 12px 24px -4px rgba(37, 99, 235, 0.12);
+}
+
+.case-threadcove .paper-sheet[aria-selected="true"] {
+  transform: translateY(-8px) scale(1.02);
+  border-color: #2563eb;
+  box-shadow: 0 16px 32px -4px rgba(37, 99, 235, 0.18);
+  z-index: 5;
+}
+
+.case-threadcove .sheet-num {
+  font: 10px var(--font-mono);
+  color: #64748b;
+  letter-spacing: 0.08em;
+}
+
+.case-threadcove .sheet-title {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #0f172a;
+  margin-block: 8px;
+}
+
+.case-threadcove .sheet-tag {
+  font: 10px var(--font-mono);
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 2px;
+  align-self: flex-start;
+}
+
+/* Conceptual Schematic Diagram (DOM + SVG) */
+.case-threadcove .paper-schematic-wrap {
+  background: #ffffff;
+  border: 1px solid #d1dbe5;
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.02);
+}
+
+.case-threadcove .paper-schematic-svg {
+  width: 100%;
+  height: auto;
+  max-height: 150px;
+  display: block;
+}
+
+/* Panels */
+.case-threadcove .paper-panel {
+  padding: 20px 24px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.04);
+}
+
+.case-threadcove .paper-desk-stage.has-js .paper-panel[hidden] {
+  display: none !important;
+}
+
+.case-threadcove .paper-panel h4 {
+  font-size: 15px;
+  color: #1e3a8a;
+  margin-bottom: 6px;
+}
+
+.case-threadcove .paper-panel p {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.8;
+}
+
+/* Longitudinal Dossier Records (Vertical Timeline & Audits) */
+.case-threadcove .dossier-section {
+  padding-block: 70px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.case-threadcove .dossier-section h2 {
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-block: 10px 36px;
+}
+
+/* Vertical Timeline */
+.case-threadcove .dossier-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  padding-left: 20px;
+  border-left: 2px solid #cbd5e1;
+  margin-left: 10px;
+}
+
+.case-threadcove .dossier-timeline-item {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 22px 26px;
+  transition: border-color var(--transition-fast);
+}
+
+.case-threadcove .dossier-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -27px;
+  top: 26px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
+.case-threadcove .dossier-item-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.case-threadcove .dossier-step-tag {
+  font: 11px var(--font-mono);
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.case-threadcove .dossier-timeline-item h3 {
+  font-size: 17px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.case-threadcove .dossier-timeline-item p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* Longitudinal Tradeoff Audits */
+.case-threadcove .dossier-audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.case-threadcove .dossier-audit-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid #2563eb;
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+}
+
+.case-threadcove .dossier-audit-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.case-threadcove .dossier-audit-num {
+  font: 11px var(--font-mono);
+  color: #2563eb;
+  letter-spacing: 0.08em;
+}
+
+.case-threadcove .dossier-audit-card h3 {
+  font-size: 17px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #0f172a;
+}
+
+.case-threadcove .dossier-audit-summary {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.case-threadcove .dossier-audit-detail {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 14px;
+}
+
+.case-threadcove .dossier-audit-ref {
+  font: 11px var(--font-mono);
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+@media (max-width: 900px) {
+  .case-clawtide .case-hero {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .case-threadcove .dossier-masthead-hero {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .case-threadcove .paper-sheets-wrap {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .case-threadcove .paper-sheet {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .case-threadcove .paper-sheets-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .case-threadcove .dossier-timeline {
+    padding-left: 14px;
+    margin-left: 6px;
+  }
+
+  .case-threadcove .dossier-timeline-item::before {
+    left: -21px;
+  }
+
+  .next-project-banner {
+    padding: 24px;
+  }
+}

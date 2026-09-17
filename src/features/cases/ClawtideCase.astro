@@ -1,0 +1,232 @@
+---
+import type { Project } from '../../data/projects';
+import { projects } from '../../data/projects';
+import { url } from '../../lib/urls';
+import { features } from '../../config/features';
+import './cases.css';
+
+const hasProjectSection = features.sections.includes('projects') && projects.length > 0;
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+
+// Dynamically compute next project
+const currentIndex = projects.findIndex((p) => p.id === project.id);
+const nextProject = projects.length > 1
+  ? projects[(currentIndex + 1) % projects.length]
+  : null;
+---
+<article class="case-page case-clawtide container">
+  <!-- Case Hero -->
+  <div class="case-hero">
+    <div class="case-hero-copy">
+      <p class="eyebrow">{project.category}</p>
+      <h1>{project.name}</h1>
+      <p class="case-summary">{project.summary}</p>
+      <p class="case-desc">{project.description}</p>
+      <div class="tags-row">
+        {project.tags.map((tag) => <span class="tag">{tag}</span>)}
+      </div>
+      <div class="case-actions">
+        {project.sourceUrl && (
+          <a class="button button-dark" href={project.sourceUrl} target="_blank" rel="noopener noreferrer">
+            查看源码 ↗
+          </a>
+        )}
+        <a class="button button-outline" href={url(hasProjectSection ? '#projects' : '')}>
+          ← {hasProjectSection ? '返回精选作品' : '返回首页'}
+        </a>
+      </div>
+    </div>
+
+    <!-- Rigid Ceramic Grooves Apparatus -->
+    <div class="ceramic-stage-card" data-active="web">
+      <div class="ceramic-header">
+        <span class="ceramic-title">TIDAL ORDER / 潮汐刻槽</span>
+        <span class="tag">概念图</span>
+      </div>
+      <div class="ceramic-tabs" role="tablist" aria-label="通道选择">
+        <button class="ceramic-tab" role="tab" aria-selected="true" tabindex="0" id="tab-web" aria-controls="panel-web" data-route="web">
+          Web 控制台
+        </button>
+        <button class="ceramic-tab" role="tab" aria-selected="false" tabindex="-1" id="tab-im" aria-controls="panel-im" data-route="im">
+          IM 机器人
+        </button>
+        <button class="ceramic-tab" role="tab" aria-selected="false" tabindex="-1" id="tab-cron" aria-controls="panel-cron" data-route="cron">
+          定时调度
+        </button>
+      </div>
+
+      <div class="ceramic-canvas-wrap" aria-hidden="true">
+        <svg viewBox="0 0 540 320" fill="none" xmlns="http://www.w3.org/2000/svg" class="ceramic-svg">
+          <defs>
+            <linearGradient id="ceramic-bevel" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+              <stop offset="100%" stop-color="#ded8cb" stop-opacity="0.4" />
+            </linearGradient>
+            <filter id="groove-shadow" x="-5%" y="-5%" width="110%" height="110%">
+              <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#8f8776" flood-opacity="0.25" />
+            </filter>
+          </defs>
+
+          <!-- Ceramic Plinth Body with Dual Bevel -->
+          <rect x="14" y="14" width="512" height="292" rx="20" fill="#faf7f0" stroke="#ded8cb" stroke-width="1.5" />
+          <rect x="16" y="16" width="508" height="288" rx="18" fill="none" stroke="url(#ceramic-bevel)" stroke-width="1.5" />
+
+          <!-- Channel Entrance Labels -->
+          <text id="label-web" class="groove-label" x="46" y="52">01 / WEB (RBAC)</text>
+          <text id="label-im" class="groove-label" x="46" y="138">02 / IM (OWNER GATE)</text>
+          <text id="label-cron" class="groove-label" x="46" y="224">03 / CRON (LEASE LOCK)</text>
+
+          <!-- Groove 1: Web (Top -> Converges to Hub 450,160) -->
+          <path d="M 46,75 C 190,75 310,130 450,160" stroke="#ded9cb" stroke-width="14" stroke-linecap="round" filter="url(#groove-shadow)" />
+          <path d="M 46,76 C 190,76 310,131 450,161" stroke="#c4bead" stroke-width="2" stroke-linecap="round" />
+          <path d="M 46,74 C 190,74 310,129 450,159" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.85" />
+          <path d="M 46,75 C 190,75 310,130 450,160" stroke="#eeebe2" stroke-width="9" stroke-linecap="round" />
+          <path id="pulse-web" class="groove-pulse" d="M 46,75 C 190,75 310,130 450,160" stroke="#1f3b2e" stroke-width="3.5" stroke-dasharray="75 240" stroke-linecap="round" />
+
+          <!-- Groove 2: IM (Middle -> Converges to Hub 450,160) -->
+          <path d="M 46,160 C 200,160 320,160 450,160" stroke="#ded9cb" stroke-width="14" stroke-linecap="round" filter="url(#groove-shadow)" />
+          <path d="M 46,161 C 200,161 320,161 450,161" stroke="#c4bead" stroke-width="2" stroke-linecap="round" />
+          <path d="M 46,159 C 200,159 320,159 450,159" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.85" />
+          <path d="M 46,160 C 200,160 320,160 450,160" stroke="#eeebe2" stroke-width="9" stroke-linecap="round" />
+          <path id="pulse-im" class="groove-pulse" d="M 46,160 C 200,160 320,160 450,160" stroke="#2e5c46" stroke-width="3.5" stroke-dasharray="55 255" stroke-linecap="round" />
+
+          <!-- Groove 3: Cron (Bottom -> Converges to Hub 450,160) -->
+          <path d="M 46,245 C 190,245 310,190 450,160" stroke="#ded9cb" stroke-width="14" stroke-linecap="round" filter="url(#groove-shadow)" />
+          <path d="M 46,246 C 190,246 310,191 450,161" stroke="#c4bead" stroke-width="2" stroke-linecap="round" />
+          <path d="M 46,244 C 190,244 310,189 450,159" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.85" />
+          <path d="M 46,245 C 190,245 310,190 450,160" stroke="#eeebe2" stroke-width="9" stroke-linecap="round" />
+          <path id="pulse-cron" class="groove-pulse" d="M 46,245 C 190,245 310,190 450,160" stroke="#45785f" stroke-width="3.5" stroke-dasharray="65 250" stroke-linecap="round" />
+
+          <!-- Convergence Nexus Hub (AgentRuntime Socket) -->
+          <circle cx="450" cy="160" r="22" fill="#ded9cb" stroke="#c4bead" stroke-width="1.5" />
+          <circle cx="450" cy="160" r="16" fill="#faf7f0" stroke="#ffffff" stroke-width="1.5" />
+          <circle cx="450" cy="160" r="8" fill="#1f3b2e" />
+          <circle cx="450" cy="160" r="3" fill="#ffffff" />
+          <text x="450" y="198" text-anchor="middle" font-size="10" fill="#78716c" font-family="monospace">AgentRuntime</text>
+        </svg>
+      </div>
+
+      <div id="panel-web" class="ceramic-panel" role="tabpanel" aria-labelledby="tab-web">
+        <h4>Web 入口：Cookie / RBAC 鉴权</h4>
+        <p>基于 Cookie 身份鉴权与 RBAC 工作区权限，指令汇入统一运行时。</p>
+      </div>
+      <div id="panel-im" class="ceramic-panel" role="tabpanel" aria-labelledby="tab-im">
+        <h4>IM 入口：Owner Gate 过滤</h4>
+        <p>经由专用 Owner Gate 进行来源校验与身份识别，隔离非授权渠道调用。</p>
+      </div>
+      <div id="panel-cron" class="ceramic-panel" role="tabpanel" aria-labelledby="tab-cron">
+        <h4>定时调度：分布式租约锁</h4>
+        <p>基于租约机制触发任务执行，防止并发重复调度。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mechanism Section -->
+  {project.mechanisms && (
+    <section class="case-section" id="mechanism">
+      <p class="eyebrow">PIPELINE</p>
+      <h2>任务进入运行时的路径</h2>
+      <div class="mechanism-pipeline">
+        {project.mechanisms.map((m) => (
+          <div class="pipe-step">
+            <div class="pipe-num">{m.step} / {m.tag}</div>
+            <h3>{m.title}</h3>
+            <p>{m.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Tradeoffs Section -->
+  {project.tradeoffs && (
+    <section class="case-section" id="tradeoffs">
+      <p class="eyebrow">ENGINEERING</p>
+      <h2>工程取舍与边界</h2>
+      <div class="tradeoffs-grid">
+        {project.tradeoffs.map((t) => (
+          <div class="tradeoff-card">
+            <h3>{t.title}</h3>
+            <p class="tradeoff-summary">{t.summary}</p>
+            <p class="tradeoff-detail">{t.detail}</p>
+            <a class="tradeoff-ref" href={t.sourceUrl} target="_blank" rel="noopener noreferrer">
+              依据：{t.sourceRef} ↗
+            </a>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Next Project Banner -->
+  {nextProject && (
+    <div class="next-project-banner">
+      <div>
+        <p class="eyebrow">NEXT PROJECT</p>
+        <h3>{nextProject.name}</h3>
+        <p>{nextProject.summary}</p>
+      </div>
+      <a class="button button-dark" href={url(`projects/${nextProject.id}/`)}>
+        阅读 {nextProject.name} 案例 <span>→</span>
+      </a>
+    </div>
+  )}
+</article>
+
+<script>
+  const card = document.querySelector<HTMLElement>('.case-clawtide .ceramic-stage-card');
+  if (card) {
+    card.classList.add('has-js');
+    const tabs = card.querySelectorAll<HTMLButtonElement>('.ceramic-tab');
+    const panels = card.querySelectorAll<HTMLElement>('.ceramic-panel');
+
+    function selectTab(tab: HTMLButtonElement) {
+      tabs.forEach((t) => {
+        t.setAttribute('aria-selected', 'false');
+        t.setAttribute('tabindex', '-1');
+      });
+      panels.forEach((p) => {
+        p.hidden = true;
+      });
+
+      tab.setAttribute('aria-selected', 'true');
+      tab.setAttribute('tabindex', '0');
+
+      const route = tab.getAttribute('data-route') || 'web';
+      card?.setAttribute('data-active', route);
+
+      const targetId = tab.getAttribute('aria-controls');
+      if (targetId) {
+        const targetPanel = document.getElementById(targetId);
+        if (targetPanel) targetPanel.hidden = false;
+      }
+    }
+
+    // Default select first tab
+    selectTab(tabs[0]);
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => selectTab(tab));
+
+      tab.addEventListener('keydown', (e) => {
+        const tabList = Array.from(tabs);
+        const index = tabList.indexOf(tab);
+        let nextIndex = index;
+        if (e.key === 'ArrowRight') nextIndex = (index + 1) % tabList.length;
+        else if (e.key === 'ArrowLeft') nextIndex = (index - 1 + tabList.length) % tabList.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = tabList.length - 1;
+        else return;
+
+        e.preventDefault();
+        tabList[nextIndex].focus();
+        selectTab(tabList[nextIndex]);
+      });
+    });
+  }
+</script>

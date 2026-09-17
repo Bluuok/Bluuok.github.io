@@ -1,63 +1,52 @@
-# Bluuok 个人网页
+# Bluuok · Digital Atelier
 
-以桌面网页体验为重点的个人作品集框架。Astro + TypeScript + GSAP，输出静态文件，无数据库，无登录，无服务器 API。当前域名未配置，本地直接预览。
+冷白底的四页个人作品集，使用 Astro、TypeScript、Canvas 2D、GSAP 和按需加载的 Three.js，输出纯静态文件。
 
-## 启动
+| 页面 | 内容 |
+| --- | --- |
+| `/` | 细粒光尘、可交互三维布料、精选项目与个人介绍 |
+| `/projects/clawtide/` | 陶瓷刻槽装置、任务入口与工程取舍 |
+| `/projects/threadcove/` | 纸面研究台、研究任务与后端接口 |
+| `/playground/` | 小作品与实验；点击后进入 First Spark 双手滚动体验 |
 
-推荐 Node.js 22.12+ 或 24 LTS。本机 PATH 中的旧 Node 20.18 可能不满足依赖要求；可直接双击 `start-local.cmd`，该脚本会优先选择当前机器已有的 Codex Node 24，再回退到 PATH 中的 Node。
+First Spark 使用 `/playground/#first-spark`，不增加第五个路由。默认页面不加载手部图像或 GSAP 时间轴。
 
-```powershell
-cd E:\zzzz\personal-site
+## 本地运行
+
+使用 Node.js 24。Windows 可以使用仓库内的 `start-local.cmd`，它优先选择本机已有的 Node 24；`stop-local.cmd` 停止本站服务。
+
+```sh
 npm install
 npm run dev
 ```
 
-浏览器打开 http://127.0.0.1:4321 。新版 Astro 使用后台开发服务；双击 `stop-local.cmd` 停止本站服务。安装依赖只在首次需要联网；网页使用本地代码与素材，无远程字体或页面运行时 API。
+默认打开 `http://127.0.0.1:4321`。页面不依赖远程字体、数据库、账户或运行时 API。
 
-```powershell
+```sh
 npm run check
 npm run build
 npm run preview
 ```
 
-## 最常改的地方
+## 常用修改入口
 
-| 修改 | 文件 |
+| 修改内容 | 文件或目录 |
 | --- | --- |
-| 署名、首页文案、GitHub、邮箱 | `src/data/site.ts` |
-| 项目名称、简介、标签、图片、源码和演示链接 | `src/data/projects.ts` |
-| 开场开关、区块顺序与移除 | `src/config/features.ts` |
-| 色彩、字体、留白变量 | `src/styles/tokens.css` |
-| 通用布局、卡片、响应式 | `src/styles/global.css` |
-| 开场布局与构图 | `src/features/intro/Intro.astro`、`intro.css` |
-| 手部位置、角度、大小、接触点、动画时序 | `src/features/intro/config.ts` |
-| 光尘密度、亮度、字符/图案、位置与两段切换 | `src/features/particles/config.ts` |
-| 双手、缩放与柔光时间轴 | `src/features/intro/animation.ts` |
-| 手部图层结构 | `src/features/intro/Hand.astro` |
-| 项目详情模板 | `src/pages/projects/[id].astro` |
+| 作者信息、首页文案与联系方式 | `src/data/site.ts` |
+| 项目事实、媒体类型与源码证据 | `src/data/projects.ts` |
+| 实验目录 | `src/data/experiments.ts` |
+| 独立功能开关、首页区块顺序 | `src/config/features.ts` |
+| 色彩、字体、留白 | `src/styles/tokens.css` |
+| 粒子外观与鼠标作用范围 | `src/features/particles/config.ts`、`interaction.ts` |
+| 布料网格、四向形变、材质与相机 | `src/features/cloth/` |
+| 两个项目页的构图 | `src/features/cases/` |
+| 实验加载、关闭、重播与历史 | `src/features/first-spark/` |
+| 原双手素材、指尖锚点与滚动分镜 | `src/features/intro/` |
 
-`projects.ts` 增加一个对象即可增加卡片与详情页；删除对象则同时删除两处。未填源码/演示地址时不显示对应按钮。为 image 填入 `/images/文件名.webp`（部署子路径时加上 base 前缀），图像放入 public/images。公共项目资料现为待填框架，无伪造截图或成果。
+各项目页以数据描述真实能力；概念图不标成产品截图。未提供的媒体和演示地址不补造。关闭粒子不会删除首页介绍；关闭布料不影响正文；关闭 First Spark 不影响其他页面。`features.intro` 是旧配置兼容字段，不再控制首页。
 
-设置 `features.intro = false` 可切换为普通静态首屏；完整移除开场时，再删 index.astro 中 Intro 的 import 与调用、删除 `src/features/intro/`，并卸载 gsap。各正文区块不依赖开场。修改 sections 数组可重排/删除区块，顶部导航跟随；开场链接指向第一个可用区块。
+详见 [四页修改与验收说明](docs/FOUR-PAGE-IMPLEMENTATION.md) 和 [原始设计执行方案](docs/FOUR-PAGE-DESIGN-EXECUTION.md)。旧纸手与粒子的细节说明保留在 [CUSTOMIZATION.md](docs/CUSTOMIZATION.md)。
 
-## 目录
+## 构建与部署
 
-```text
-src/
-  config/       开关与区块注册
-  data/         个人与项目内容
-  components/   导航、页脚、项目卡片与概念封面
-  features/intro/  独立开场模块
-  features/particles/  光尘、图案采样与渲染模块
-  sections/     独立正文区块
-  layouts/      页面外壳与元信息
-  pages/        静态路由
-  styles/       视觉变量与通用样式
-public/         本地静态资源
-```
-
-`DESIGN.md` 记录视觉规则与六个分镜。`docs/CUSTOMIZATION.md` 详细说明手部位置和鼠标粒子的修改方法；生图与图层提取提示词保存在 `docs/artwork/PROMPTS.md`。`VERIFICATION.md` 记录实际验证。
-
-## 后续部署
-
-构建产物在 `dist/`，可托管到支持静态文件的服务。购买域名后只需配置 astro.config.mjs 的 `site`；GitHub Pages 仓库子路径需同时配置 `base`。本轮不发布、不修改任何已有项目或 GitHub 仓库。
+构建结果位于 `dist/`。部署到子目录时配置 `astro.config.mjs` 的 `base`，站内 URL 使用统一 helper。合并或部署前请检查当前 PR 的截图和验证记录；本地浏览器结果不等同于真实移动设备或现场 CWV。

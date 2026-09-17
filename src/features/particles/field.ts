@@ -2,6 +2,7 @@ import { pointerConfig, pointerInfluence } from './interaction';
 import { resolveParticleFieldConfig, type NormalizedPoint, type ParticleFieldOptions } from './config';
 import { createParticleRenderer, type RenderParticle } from './renderer';
 import { createShapeTargets, type ShapeTarget } from './targets';
+import { subscribeMotion, type MotionState } from '../../lib/motion';
 
 interface Particle extends RenderParticle {
   homeX: number; homeY: number; phase: number;
@@ -50,8 +51,8 @@ export function mountParticleField(
   const eventSource = host.parentElement ?? host;
   host.style.setProperty('--particle-shape-x', `${config.shape.center.x * 100}%`);
   host.style.setProperty('--particle-shape-y', `${config.shape.center.y * 100}%`);
-  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let reducedMotion = motionQuery.matches;
+
+  let reducedMotion = false;
   let visible = true;
   let pageVisible = !document.hidden;
   let running = false;
@@ -89,7 +90,6 @@ export function mountParticleField(
 
   const makeHome = (index: number) => {
     const region = config.region;
-    // A broad field plus a denser lower-centre cloud, kept behind the main title.
     if (index % 5 < 2) {
       const angle = Math.random() * Math.PI * 2;
       const radius = Math.sqrt(-2 * Math.log(Math.max(.0001, Math.random())));
@@ -260,6 +260,7 @@ export function mountParticleField(
   };
 
   const setPointer = (event: PointerEvent) => {
+    if (reducedMotion || !pageVisible || !visible) return;
     const bounds = host.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
@@ -278,13 +279,29 @@ export function mountParticleField(
     host.dataset.pointerActive = 'false';
   };
   const handleVisibility = () => { pageVisible = !document.hidden; syncAnimation(); };
-  const handleMotion = (event: MediaQueryListEvent) => {
-    reducedMotion = event.matches;
-    pointer = null;
-    shapeMix = 0;
-    reportShape(false);
+  const handlePageHide = () => { pageVisible = false; syncAnimation(); };
+  const handlePageShow = () => { pageVisible = !document.hidden; syncAnimation(); };
+
+  // Subscribe to unified motion controller
+  const unsubscribeMotion = subscribeMotion((m: MotionState) => {
+    reducedMotion = m.isReduced;
+    if (reducedMotion) {
+      pointer = null;
+      pointerFocus = null;
+      sceneProgress = 0;
+      sceneFocus = null;
+      shapeMix = 0;
+      host.dataset.pointerActive = 'false';
+      for (const particle of particles) {
+        particle.x = particle.homeX;
+        particle.y = particle.homeY;
+        particle.vx = 0;
+        particle.vy = 0;
+      }
+      reportShape(false);
+    }
     syncAnimation();
-  };
+  });
 
   const resizeObserver = new ResizeObserver(resize);
   const intersectionObserver = new IntersectionObserver(([entry]) => {
@@ -299,7 +316,8 @@ export function mountParticleField(
   eventSource.addEventListener('pointerup', clearPointer);
   eventSource.addEventListener('pointercancel', clearPointer);
   document.addEventListener('visibilitychange', handleVisibility);
-  motionQuery.addEventListener('change', handleMotion);
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('pageshow', handlePageShow);
   host.dataset.pointerActive = 'false';
   host.dataset.shapeActive = 'false';
   resize();
@@ -310,6 +328,7 @@ export function mountParticleField(
     cleaned = true;
     running = false;
     cancelAnimationFrame(frame);
+    unsubscribeMotion();
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
     eventSource.removeEventListener('pointermove', setPointer);
@@ -318,7 +337,8 @@ export function mountParticleField(
     eventSource.removeEventListener('pointerup', clearPointer);
     eventSource.removeEventListener('pointercancel', clearPointer);
     document.removeEventListener('visibilitychange', handleVisibility);
-    motionQuery.removeEventListener('change', handleMotion);
+    window.removeEventListener('pagehide', handlePageHide);
+    window.removeEventListener('pageshow', handlePageShow);
     renderer.clear();
     host.dataset.particleState = 'disconnected';
   }) as ParticleFieldMount;

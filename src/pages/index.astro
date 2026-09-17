@@ -2,18 +2,29 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Intro from '../features/intro/Intro.astro';
+import ParticleHero from '../features/home/ParticleHero.astro';
+import ClothSection from '../features/cloth/ClothSection.astro';
 import Projects from '../sections/Projects.astro';
 import About from '../sections/About.astro';
 import Contact from '../sections/Contact.astro';
 import { features } from '../config/features';
-import { site } from '../data/site';
-const sections = { projects: Projects, about: About, contact: Contact };
+
+const sectionsMap = {
+  projects: Projects,
+  about: About,
+  contact: Contact,
+};
 ---
 <Layout>
   <div id="top"></div>
   <Header />
-  {features.intro ? <Intro /> : <section class="simple-hero container"><p class="eyebrow">{site.eyebrow}</p><h1>{site.headline.join('')}</h1><p>{site.intro}</p></section>}
-  <main id="main" tabindex="-1">{features.sections.map(id => { const Section = sections[id]; return <Section />; })}</main>
+  <main id="main" tabindex="-1">
+    <ParticleHero />
+    {features.cloth && <ClothSection />}
+    {features.sections.map((id) => {
+      const Section = sectionsMap[id];
+      return Section ? <Section /> : null;
+    })}
+  </main>
   <Footer />
 </Layout>
