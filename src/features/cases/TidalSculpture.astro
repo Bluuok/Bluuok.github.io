@@ -1,0 +1,27 @@
+---
+const entries = [
+  ['Web', 'Cookie 与 RBAC 决定当前身份与工作区访问边界。'],
+  ['IM', 'Owner Gate 处理渠道消息的归属，再路由到对应上下文。'],
+  ['定时任务', '调度器领取发生项租约；租约是执行协调，不是用户鉴权或跨机器分布式锁。'],
+];
+const top = 'M80 195 C180 178 180 65 300 92 C412 113 407 202 550 183';
+---
+<section class="tidal-installation" data-tidal data-render-state="poster" aria-label="三条入口的陶瓷潮汐概念装置">
+  <div class="tidal-viewport">
+    <canvas aria-hidden="true"></canvas>
+    <svg class="tidal-poster" viewBox="0 0 640 450" aria-hidden="true">
+      <defs><linearGradient id="tidalIvory" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#ffffff"/><stop offset=".65" stop-color="#eaedf5"/><stop offset="1" stop-color="#c6ccdb"/></linearGradient></defs>
+      {[0,1,2].map(i => <g transform={`translate(${i*10} ${i*42})`}><path d={`${top} L550 209 C414 233 380 152 304 127 C194 90 218 222 80 230Z`} fill="url(#tidalIvory)" stroke="#d9dee8" stroke-width=".6"/><path d={top} fill="none" stroke="#fff" stroke-width="2"/></g>)}
+    </svg>
+  </div>
+  <div class="installation-caption"><span>STUDY / TIDAL ORDER</span><span>概念装置 · 非实时状态</span></div>
+  <div class="tidal-tabs" role="tablist" aria-label="查看入口说明">
+    {entries.map((e,i) => <button role="tab" type="button" id={`tidal-tab-${i}`} aria-controls={`tidal-panel-${i}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1}><span>0{i+1}</span>{e[0]}</button>)}
+  </div>
+  {entries.map((e,i) => <div class="tidal-caption" role="tabpanel" id={`tidal-panel-${i}`} aria-labelledby={`tidal-tab-${i}`}><p>{e[1]}</p></div>)}
+</section>
+<script>
+  import { mountTabs } from '../../lib/tabs';
+  import { mountTidal } from './tidal';
+  document.querySelectorAll<HTMLElement>('[data-tidal]').forEach(root => { const scene = mountTidal(root); mountTabs(root, index => scene.select(index)); });
+</script>

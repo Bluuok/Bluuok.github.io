@@ -1,0 +1,7 @@
+---
+import {url} from '../../lib/urls';
+import {experiments} from '../../data/experiments';
+import {features} from '../../config/features';
+const items=experiments.filter(e=>e.id!=='first-spark'||features.firstSpark);
+---
+{items.length>0&&<section class="container studio-preview" aria-labelledby="studio-preview-title"><div><p class="eyebrow">SMALL WORKS / OPEN EXPERIMENTS</p><h2 id="studio-preview-title">另一些好奇，<br/>不必长成产品。</h2><p>纸手、微光，以及一次触碰。<br/>把独立的视觉实验，留在可以自由进入的地方。</p><a class="text-link" href={url('playground/')}>浏览 {items.length} 件小作品与实验 ↗</a></div><a class="studio-preview-art" href={url('playground/#first-spark')} aria-label="查看 First Spark 实验"><img src={url('images/cases/first-spark-cover.jpg')} alt="原版纸手素材的静态构图预览" width="1000" height="600" loading="lazy"/><span>01 / FIRST SPARK <span aria-hidden="true">↗</span></span></a></section>}
