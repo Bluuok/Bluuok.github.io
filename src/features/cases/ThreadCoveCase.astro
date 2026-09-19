@@ -1,28 +1,41 @@
 ---
-import type {Project} from '../../data/projects';
+import type { Project } from '../../data/projects';
 import CaseEvidence from '../../components/CaseEvidence.astro';
 import CaseClosing from '../../components/CaseClosing.astro';
 import './cases.css';
-interface Props {project:Project}
-const {project}=Astro.props;
-const sheets=[{label:'问题',en:'THE QUESTION',text:'从一个值得追问的问题开始。',tag:'01 / SESSION'},{label:'过程',en:'THE PROCESS',text:'看见任务、工具与事件的过程。',tag:'02 / EVENTS'},{label:'材料',en:'THE MATERIAL',text:'把文件和线索放回各自任务。',tag:'03 / WORKSPACE'},{label:'继续',en:'THE NEXT QUESTION',text:'已有产物，成为下一次研究的起点。',tag:'04 / CONTINUE'}];
+interface Props { project: Project }
+const { project } = Astro.props;
+const sheets = [
+  { label:'问题', en:'THE QUESTION', text:'从一个值得追问的问题开始。', tag:'01 / SESSION' },
+  { label:'过程', en:'THE PROCESS', text:'看见任务、工具与事件的过程。', tag:'02 / EVENTS' },
+  { label:'材料', en:'THE MATERIAL', text:'把文件和线索放回各自任务。', tag:'03 / WORKSPACE' },
+  { label:'继续', en:'THE NEXT QUESTION', text:'已有产物，成为下一次研究的起点。', tag:'04 / CONTINUE' },
+];
 ---
 <article class="studio-case thread-case container" id="overview">
   <nav class="case-chapters" aria-label="案例章节"><span>02 / THREADCOVE</span><a href="#interface">真实界面</a><a href="#mechanism">研究过程</a><a href="#tradeoffs">工程取舍</a></nav>
-  <header class="research-masthead"><div><p class="eyebrow">FIELDNOTES / 线索的编织</p><h1>{project.name}</h1><p class="case-lead">把好奇，留在可以继续的地方。</p></div><p class="research-abstract">{project.description}<br /><a class="text-link" href="#interface">走进工作台 ↓</a></p></header>
+  <header class="research-masthead">
+    <div><p class="eyebrow">FIELDNOTES / 线索的编织</p><h1>{project.name}</h1><p class="case-lead">把好奇，留在可以继续的地方。</p></div>
+    <p class="research-abstract">{project.description}<br /><a class="text-link" href="#interface">走进工作台 ↓</a></p>
+  </header>
   <section class="research-desk" aria-label="研究过程的纸页概念示意" data-research-desk data-selection="0">
     <div class="desk-registration"><span>FIELDNOTES — STUDY 02</span><span>概念示意 / 非产品截图</span></div>
     <svg class="desk-threads" viewBox="0 0 1000 350" preserveAspectRatio="none" aria-hidden="true"><path d="M140 160 C280 15 240 320 390 165 S660 20 650 160 S780 310 875 135"/><path d="M140 168 C300 70 270 210 390 178 S580 260 655 173 S800 60 875 145"/></svg>
-    <div class="desk-sheets" role="tablist" aria-label="选择一个研究阶段">{sheets.map((s,i)=><button type="button" class="desk-sheet" role="tab" id={`desk-tab-${i}`} aria-controls={`desk-panel-${i}`} aria-selected={String(i===0)} tabindex={i===0?0:-1} style={`--sheet-order:${i}`}><span class="eyebrow">{s.tag}</span><strong>{s.label}</strong><span class="sheet-rule"></span><span class="sheet-thought">{s.text}</span><span class="sheet-mark" aria-hidden="true">{s.en}</span></button>)}</div>
-    {sheets.map((s,i)=><div class="desk-caption" role="tabpanel" id={`desk-panel-${i}`} aria-labelledby={`desk-tab-${i}`}><span>0{i+1}</span><p>{s.text} 这是对工作方式的概念表达；实际能力以界面和源码为准。</p></div>)}
+    <div class="desk-sheets" role="tablist" aria-label="选择一个研究阶段">
+      {sheets.map((s,i) => <button type="button" class="desk-sheet" role="tab" id={`desk-tab-${i}`} aria-controls={`desk-panel-${i}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1} style={`--sheet-order:${i}`}><span class="eyebrow">{s.tag}</span><strong>{s.label}</strong><span class="sheet-rule"></span><span class="sheet-thought">{s.text}</span><span class="sheet-mark" aria-hidden="true">{s.en}</span></button>)}
+    </div>
+    {sheets.map((s,i) => <div class="desk-caption" role="tabpanel" id={`desk-panel-${i}`} aria-labelledby={`desk-tab-${i}`}><span>0{i+1}</span><p>{s.text} 这是对工作方式的概念表达；实际能力以界面和源码为准。</p></div>)}
   </section>
   <CaseEvidence project={project}/>
-  <section class="case-section research-sequence" id="mechanism"><div class="case-section-heading"><div><p class="eyebrow">02 / A RESEARCH THREAD</p><h2>不是更多窗口，<br />而是更清楚的上下文。</h2></div><p>由使用者提出问题与核验结论。<br />工作台负责组织任务、事件和材料。</p></div>{project.mechanisms.map(m=><article><div><span class="step-number">{m.step}</span><span class="eyebrow">{m.tag}</span></div><h3>{m.title}</h3><p>{m.desc}</p></article>)}</section>
-  <section class="case-section" id="tradeoffs"><p class="eyebrow">03 / MARGINAL NOTES</p><h2>工具背后的三个选择。</h2><div class="engineering-notes">{project.tradeoffs.map((t,i)=><article><span class="step-number">0{i+1}</span><div><h3>{t.title}</h3><p>{t.summary}</p><p class="note-detail">{t.detail}</p><a class="text-link" href={t.sourceUrl} target="_blank" rel="noopener noreferrer">{t.sourceRef} ↗</a></div></article>)}</div></section>
+  <section class="case-section research-sequence" id="mechanism">
+    <div class="case-section-heading"><div><p class="eyebrow">02 / A RESEARCH THREAD</p><h2>不是更多窗口，<br />而是更清楚的上下文。</h2></div><p>由使用者提出问题与核验结论。<br />工作台负责组织任务、事件和材料。</p></div>
+    {project.mechanisms.map(m => <article><div><span class="step-number">{m.step}</span><span class="eyebrow">{m.tag}</span></div><h3>{m.title}</h3><p>{m.desc}</p></article>)}
+  </section>
+  <section class="case-section" id="tradeoffs"><p class="eyebrow">03 / MARGINAL NOTES</p><h2>工具背后的三个选择。</h2><div class="engineering-notes">{project.tradeoffs.map((t,i) => <article><span class="step-number">0{i+1}</span><div><h3>{t.title}</h3><p>{t.summary}</p><p class="note-detail">{t.detail}</p><a class="text-link" href={t.sourceUrl} target="_blank" rel="noopener noreferrer">{t.sourceRef} ↗</a></div></article>)}</div></section>
   <CaseClosing project={project}/>
 </article>
 <script>
-  import {mountTabs} from '../../lib/tabs';
-  import {mountPaperDesk} from './research-desk';
-  document.querySelectorAll<HTMLElement>('[data-research-desk]').forEach(root=>{mountTabs(root);mountPaperDesk(root);});
+  import { mountTabs } from '../../lib/tabs';
+  import { mountPaperDesk } from './research-desk';
+  document.querySelectorAll<HTMLElement>('[data-research-desk]').forEach(root => { mountTabs(root); mountPaperDesk(root); });
 </script>
