@@ -1,8 +1,7 @@
 name: Capture product evidence
+# Explicit maintenance operation. Produces artifacts only; never pushes source.
 on:
-  push:
-    branches: [codex/studio-completion-review]
-    paths: ['scripts/capture-products.mjs', '.github/workflows/product-media.yml']
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -29,30 +28,3 @@ jobs:
           name: product-evidence
           path: product-evidence/
           retention-days: 7
-  commit-evidence:
-    needs: capture
-    if: github.ref == 'refs/heads/codex/studio-completion-review'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: codex/studio-completion-review
-      - uses: actions/download-artifact@v4
-        with:
-          name: product-evidence
-          path: product-evidence
-      - name: Commit only validated public UI captures
-        run: |
-          mkdir -p public/images/cases
-          for f in clawtide-chat.jpg clawtide-tasks.jpg threadcove-empty.jpg threadcove-conversation.jpg first-spark-cover.jpg manifest.json; do
-            test -s "product-evidence/$f"
-            cp "product-evidence/$f" "public/images/cases/$f"
-          done
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add public/images/cases
-          git diff --cached --quiet && exit 0
-          git commit -m 'media: add versioned UI captures and original-artwork poster with fixture provenance'
-          git push origin HEAD:codex/studio-completion-review

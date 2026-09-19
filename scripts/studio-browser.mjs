@@ -63,10 +63,14 @@ try {
           check(`${label}: pointer cancellation`,await cloth.getAttribute('data-pointer-hit') === 'false');
           await page.mouse.move(2,2); await page.waitForTimeout(1300);
           check(`${label}: pointer released`,await cloth.getAttribute('data-pointer-hit') === 'false');
-          await page.emulateMedia({reducedMotion:'reduce'}); await page.waitForTimeout(200);
+          // Wait for the actual preference-driven lifecycle transition, not a fixed
+          // sleep that races software-GPU rendering. A missing transition still fails.
+          await page.emulateMedia({reducedMotion:'reduce'});
+          await page.waitForFunction(() => document.querySelector('#cloth-stage')?.getAttribute('data-cloth-state') === 'static');
           check(`${label}: reduced static`,await cloth.getAttribute('data-cloth-state') === 'static');
           await screenshot(page,`cloth-reduced-${viewport.width}`);
-          await page.emulateMedia({reducedMotion:'no-preference'}); await page.waitForTimeout(250);
+          await page.emulateMedia({reducedMotion:'no-preference'});
+          await page.waitForFunction(() => document.querySelector('#cloth-stage')?.getAttribute('data-cloth-state') === 'running');
           check(`${label}: resumed`,await cloth.getAttribute('data-cloth-state') === 'running');
         }
         if(name === 'clawtide') {
@@ -119,7 +123,6 @@ try {
           await page.evaluate(()=>{ history.replaceState(null,'',location.pathname); dispatchEvent(new PopStateEvent('popstate')); });
           check(`${label}: history closes experiment`,await card.getAttribute('data-spark-state') === 'idle');
         }
-        // Resolve all page images, including lazy media, before taking full-page evidence.
         const loaded = await page.locator('img').evaluateAll(async images => {
           return Promise.all(images.map(async img => {img.loading='eager';try{await img.decode();return {src:img.getAttribute('src'),ok:img.naturalWidth>0};}catch{return {src:img.getAttribute('src'),ok:false};}}));
         });
