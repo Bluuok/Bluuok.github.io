@@ -1,0 +1,20 @@
+---
+import type { Project } from '../data/projects';
+import { url } from '../lib/urls';
+interface Props { project:Project }
+const { project }=Astro.props;
+---
+<section class="case-section evidence-section" id="interface" aria-labelledby="interface-title" data-evidence>
+  <div class="case-section-heading"><div><p class="eyebrow">01 / IN THE APPLICATION</p><h2 id="interface-title">走进真实界面。</h2></div><p>原应用渲染 · 本地测试数据<br />不是产品概念图，不是线上模型演示。</p></div>
+  <div class="evidence-tabs" role="tablist" aria-label="界面截图" hidden>
+    {project.media.map((media,i)=><button type="button" role="tab" id={`media-tab-${i}`} aria-controls={`media-panel-${i}`} aria-selected={String(i===0)} tabindex={i===0?0:-1}>{i===0?'工作台':'任务过程'}</button>)}
+  </div>
+  {project.media.map((media,i)=><figure class="evidence-panel" id={`media-panel-${i}`} role="tabpanel" aria-labelledby={`media-tab-${i}`}>
+    <a class="evidence-image" href={url(media.src)} target="_blank" rel="noopener noreferrer" aria-label={`查看原图：${media.alt}`}><img src={url(media.src)} alt={media.alt} width={media.width} height={media.height} loading="lazy" decoding="async" /></a>
+    <figcaption><p>{media.caption}</p><a href={`${project.sourceUrl}/commit/${media.commit}`} target="_blank" rel="noopener noreferrer">取材版本 {media.commit.slice(0,7)} ↗</a></figcaption>
+  </figure>)}
+</section>
+<script>
+  import { mountTabs } from '../lib/tabs';
+  document.querySelectorAll<HTMLElement>('[data-evidence]').forEach(root=>mountTabs(root));
+</script>
