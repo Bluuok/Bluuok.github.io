@@ -3,13 +3,7 @@ on:
   push:
     branches: [codex/studio-completion-review]
   pull_request:
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package*.json'
-      - 'astro.config.mjs'
-      - 'scripts/**'
-      - '.github/workflows/studio-review.yml'
+    paths: ['src/**', 'public/**', 'package*.json', 'astro.config.mjs', 'scripts/**', '.github/workflows/studio-review.yml']
 permissions:
   contents: read
 concurrency:
@@ -18,7 +12,7 @@ concurrency:
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,11 +24,17 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
-      - name: Prepare reproducible review snapshot
+      - name: Install isolated browser tooling
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Browser verification
+        run: node scripts/studio-browser.mjs
+      - name: Prepare review snapshot
         if: always()
         run: |
           mkdir -p review-output
-          tar -czf review-output/source.tar.gz src public package.json package-lock.json astro.config.mjs tsconfig.json AGENTS.md
+          tar -czf review-output/source.tar.gz src public scripts package.json package-lock.json astro.config.mjs tsconfig.json AGENTS.md
           if [ -d dist ]; then tar -czf review-output/preview.tar.gz dist; fi
       - uses: actions/upload-artifact@v4
         if: always()
