@@ -3,10 +3,16 @@ import type { Project } from '../data/projects';
 import { projects } from '../data/projects';
 import { features } from '../config/features';
 import { url } from '../lib/urls';
-interface Props {project:Project}
-const {project}=Astro.props;
-const next=projects.find(p=>p.id!==project.id);
-const returnHref=url(features.sections.includes('projects')?'#projects':'');
+interface Props { project: Project }
+const { project } = Astro.props;
+const next = projects.find(p => p.id !== project.id);
+const returnHref = url(features.sections.includes('projects') ? '#projects' : '');
 ---
-<section class="case-section case-boundaries" id="boundaries"><p class="eyebrow">SCOPE & SOURCE</p><h2>作品，也有明确的边界。</h2><p>{project.id==='clawtide'?'部署者需要维护本地服务和模型配置。Telegram、飞书与骨架渠道的实现状态请以源码版本为准；不把本地测试视为全部真实通道或模型均已验证。':'面向个人深度研究，不是企业级多用户平台。工作台帮助组织任务和材料，不保证结论正确，也不以展示用线索图暗示已经实现自动知识图谱。'}</p><p class="case-version">文案依据产品文档快照 {project.verifiedDate} · {project.verifiedCommit.slice(0,7)}。截图采集方式见媒体说明。</p>{project.id==='clawtide'&&<p class="case-version">Clawtide 保留 HappyClaw 上游归属说明；授权与衍生关系见项目 LICENSE / README。</p>}<a class="text-link" href={`${project.sourceUrl}#getting-started`} target="_blank" rel="noopener noreferrer">源码、运行方法与许可 ↗</a></section>
-<nav class="case-next" aria-label="继续浏览"><a class="text-link" href={returnHref}>← 返回精选作品</a>{next&&<a href={url(`projects/${next.id}/`)}><span class="eyebrow">NEXT PROJECT</span><strong>{next.name} <span aria-hidden="true">↗</span></strong></a>}</nav>
+<section class="case-section case-boundaries" id="boundaries">
+  <p class="eyebrow">SCOPE & SOURCE</p><h2>作品，也有明确的边界。</h2>
+  <p>{project.id === 'clawtide' ? '部署者需要维护本地服务和模型配置。Telegram、飞书与骨架渠道的实现状态请以源码版本为准；不把本地测试视为全部真实通道或模型均已验证。' : '面向个人深度研究，不是企业级多用户平台。工作台帮助组织任务和材料，不保证结论正确，也不以展示用线索图暗示已经实现自动知识图谱。'}</p>
+  <p class="case-version">文案依据产品文档快照 {project.verifiedDate} · {project.verifiedCommit.slice(0, 7)}。截图采集方式见媒体说明。</p>
+  {project.id === 'clawtide' && <p class="case-version">Clawtide 保留 HappyClaw 上游归属说明；授权与衍生关系见项目 LICENSE / README。</p>}
+  <a class="text-link" href={project.sourceUrl} target="_blank" rel="noopener noreferrer">源码、运行方法与许可 ↗</a>
+</section>
+<nav class="case-next" aria-label="继续浏览"><a class="text-link" href={returnHref}>← 返回精选作品</a>{next && <a href={url(`projects/${next.id}/`)}><span class="eyebrow">NEXT PROJECT</span><strong>{next.name} <span aria-hidden="true">↗</span></strong></a>}</nav>
