@@ -46,7 +46,7 @@ jobs:
       - name: Commit only validated public UI captures
         run: |
           mkdir -p public/images/cases
-          for f in clawtide-chat.jpg clawtide-tasks.jpg threadcove-empty.jpg threadcove-conversation.jpg manifest.json; do
+          for f in clawtide-chat.jpg clawtide-tasks.jpg threadcove-empty.jpg threadcove-conversation.jpg first-spark-cover.jpg manifest.json; do
             test -s "product-evidence/$f"
             cp "product-evidence/$f" "public/images/cases/$f"
           done
@@ -54,5 +54,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add public/images/cases
           git diff --cached --quiet && exit 0
-          git commit -m 'media: add versioned product UI captures with explicit fixture provenance'
+          git commit -m 'media: add versioned UI captures and original-artwork poster with fixture provenance'
           git push origin HEAD:codex/studio-completion-review
