@@ -1,0 +1,44 @@
+name: Studio review
+on:
+  push:
+    branches: [codex/studio-completion-review]
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package*.json'
+      - 'astro.config.mjs'
+      - 'scripts/**'
+      - '.github/workflows/studio-review.yml'
+permissions:
+  contents: read
+concurrency:
+  group: studio-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - name: Prepare reproducible review snapshot
+        if: always()
+        run: |
+          mkdir -p review-output
+          tar -czf review-output/source.tar.gz src public package.json package-lock.json astro.config.mjs tsconfig.json AGENTS.md
+          if [ -d dist ]; then tar -czf review-output/preview.tar.gz dist; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-review-${{ github.sha }}
+          path: review-output/
+          retention-days: 7
