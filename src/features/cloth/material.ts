@@ -6,10 +6,11 @@ export function createWeaveNormal(T: typeof Three): Three.DataTexture {
   const size = 128, data = new Uint8Array(size * size * 4);
   const height = (x: number, y: number) => {
     const px = x * Math.PI / 8, py = y * Math.PI / 8;
-    return .45*Math.cos(px)*Math.cos(py) + .08*Math.sin(px*4) + .06*Math.sin(py*4);
+    const twill = .09 * Math.sin((x + y) * Math.PI / 4);
+    return .42*Math.cos(px)*Math.cos(py) + .07*Math.sin(px*4) + .06*Math.sin(py*4) + twill;
   };
   for(let y=0;y<size;y++)for(let x=0;x<size;x++) {
-    const dx=(height(x+1,y)-height(x-1,y))*.45, dy=(height(x,y+1)-height(x,y-1))*.45;
+    const dx=(height(x+1,y)-height(x-1,y))*.5, dy=(height(x,y+1)-height(x,y-1))*.5;
     const length=Math.hypot(dx,dy,1), i=(x+y*size)*4;
     data[i]=Math.round((-dx/length*.5+.5)*255);
     data[i+1]=Math.round((-dy/length*.5+.5)*255);
@@ -17,7 +18,7 @@ export function createWeaveNormal(T: typeof Three): Three.DataTexture {
   }
   const texture=new T.DataTexture(data,size,size,T.RGBAFormat);
   texture.wrapS=texture.wrapT=T.RepeatWrapping;
-  texture.repeat.set(16,12); texture.generateMipmaps=true;
+  texture.repeat.set(18,14); texture.generateMipmaps=true;
   texture.minFilter=T.LinearMipmapLinearFilter; texture.magFilter=T.LinearFilter;
   texture.needsUpdate=true;
   return texture;

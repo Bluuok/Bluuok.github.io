@@ -10,9 +10,14 @@ export function mountTidal(root: HTMLElement) {
   let renderer:Three.WebGLRenderer|null=null, scene:Three.Scene|null=null;
   let camera:Three.PerspectiveCamera|null=null, group:Three.Group|null=null;
   let frame=0, last=0, x=0, y=0, tx=0, ty=0, selected=0, pulseStart=-1;
+  const meshes:Three.Mesh<Three.ExtrudeGeometry,Three.MeshPhysicalMaterial>[]=[];
   const traces:Three.Mesh<Three.TubeGeometry,Three.MeshStandardMaterial>[]=[];
   const paths:Three.CatmullRomCurve3[]=[];
   let dot:Three.Mesh<Three.SphereGeometry,Three.MeshBasicMaterial>|null=null;
+  const baseColors=[0xfbfbf7, 0xf4f7f5, 0xf2f6f8];
+  const pulseColors=[0xdaa250, 0x2f8c62, 0x22879f];
+  const traceColors=[0xa68958, 0x327d5d, 0x287a91];
+
   const paint = () => { if(renderer&&scene&&camera&&!lost)renderer.render(scene,camera); };
   const stop = () => { cancelAnimationFrame(frame); frame=0; };
   const reset = () => {
@@ -24,8 +29,16 @@ export function mountTidal(root: HTMLElement) {
     const dt=Math.min(.04,(now-last)/1000); last=now;
     const f=1-Math.exp(-dt*8); x+=(tx-x)*f; y+=(ty-y)*f;
     if(group)group.rotation.set(y,x,0);
-    const phase=(now-pulseStart)/1300;
-    if(dot) { dot.visible=pulseStart>0&&phase<1; if(dot.visible)dot.position.copy(paths[selected].getPointAt(Math.max(0,phase))); }
+    const phase=(now-pulseStart)/1200;
+    if(dot) {
+      dot.visible=pulseStart>0&&phase<1;
+      if(dot.visible) {
+        dot.position.copy(paths[selected].getPointAt(Math.max(0,Math.min(1,phase))));
+        // Pulse size peaks in mid-flight
+        const scale=1+Math.sin(phase*Math.PI)*.4;
+        dot.scale.set(scale,scale,scale);
+      }
+    }
     paint();
     if(Math.abs(tx-x)+Math.abs(ty-y)>.0002||dot?.visible)frame=requestAnimationFrame(tick);
   };
@@ -43,7 +56,7 @@ export function mountTidal(root: HTMLElement) {
       const mesh=object as Three.Mesh;
       if(mesh.isMesh) { mesh.geometry.dispose(); const materials=Array.isArray(mesh.material)?mesh.material:[mesh.material]; materials.forEach(m=>m.dispose()); }
     });
-    renderer?.dispose(); renderer?.forceContextLoss(); renderer=null; scene=null; group=null; dot=null; traces.length=paths.length=0;
+    renderer?.dispose(); renderer?.forceContextLoss(); renderer=null; scene=null; group=null; dot=null; meshes.length=traces.length=paths.length=0;
   };
   const load = async () => {
     if(loading||renderer||disposed||reduced||failed)return;
@@ -51,12 +64,13 @@ export function mountTidal(root: HTMLElement) {
     try {
       const T=await import('three'); if(disposed)return;
       renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
-      renderer.setClearColor(0,0); renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=1.1;
+      renderer.setClearColor(0,0); renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
       scene=new T.Scene(); camera=new T.PerspectiveCamera(34,1,.1,50);
       camera.position.set(4.2,3.1,7.1); camera.lookAt(0,.2,0);
-      scene.add(new T.HemisphereLight(0xf7f9ff,0x9da3b4,1.8));
-      const light=new T.DirectionalLight(0xffffff,3.5); light.position.set(-3,5,4); scene.add(light);
-      const rim=new T.DirectionalLight(0xcac9ed,.6); rim.position.set(4,1,-2); scene.add(rim);
+      scene.add(new T.HemisphereLight(0xffffff,0xe6eaf2,1.8));
+      const keyLight=new T.DirectionalLight(0xfffaf0,3.4); keyLight.position.set(-3.2,5.2,4.5); scene.add(keyLight);
+      const rimLight=new T.DirectionalLight(0xd4e9e5,1.2); rimLight.position.set(4.5,1.5,-2.5); scene.add(rimLight);
+      const specLight=new T.DirectionalLight(0xfff8ee,1.0); specLight.position.set(1.0,4.0,5.0); scene.add(specLight);
       group=new T.Group(); scene.add(group);
       for(let i=0;i<3;i++) {
         const shape=new T.Shape();
@@ -67,26 +81,55 @@ export function mountTidal(root: HTMLElement) {
         shape.bezierCurveTo(.95,-.2,.87,.67,-.12,.86);
         shape.bezierCurveTo(-1.16,1.14,-1.16,-.17,-2.5,-.15);
         shape.closePath();
-        const geo=new T.ExtrudeGeometry(shape,{depth:.27,bevelEnabled:true,bevelSegments:4,steps:1,bevelSize:.065,bevelThickness:.065,curveSegments:36});
-        const material=new T.MeshPhysicalMaterial({color:[0xf1f3f8,0xfafafa,0xe5e9f3][i],roughness:.43,metalness:0,clearcoat:.18,clearcoatRoughness:.55});
-        const mesh=new T.Mesh(geo,material); mesh.position.set((i-1)*.13,-.3,(i-1)*.83); group.add(mesh);
+        // Thick sculptural arch with generous beveled chamfer
+        const geo=new T.ExtrudeGeometry(shape,{depth:.36,bevelEnabled:true,bevelSegments:6,steps:1,bevelSize:.08,bevelThickness:.08,curveSegments:40});
+        // Glazed ceramic with subtle warm ivory (Web), forest hint (IM), and cyan tint (Scheduler)
+        const material=new T.MeshPhysicalMaterial({
+          color:baseColors[i],
+          roughness:.18,
+          metalness:0,
+          clearcoat:.95,
+          clearcoatRoughness:.08,
+          reflectivity:.88,
+        });
+        const mesh=new T.Mesh(geo,material); mesh.position.set((i-1)*.14,-.3,(i-1)*.86);
+        meshes.push(mesh); group.add(mesh);
         // The light path samples the SAME two Bezier segments as the ceramic top.
-        // A separate approximate curve floats above the surface and looks detached.
         const first=new T.CubicBezierCurve3(new T.Vector3(-2.5,0,0),new T.Vector3(-1.3,.02,0),new T.Vector3(-1.4,1.35,0),new T.Vector3(-.1,1.04,0));
         const second=new T.CubicBezierCurve3(new T.Vector3(-.1,1.04,0),new T.Vector3(1,.8,0),new T.Vector3(1.15,-.05,0),new T.Vector3(2.45,.17,0));
-        const points=[...first.getPoints(36),...second.getPoints(36).slice(1)].map(p=>new T.Vector3(p.x+mesh.position.x,p.y+mesh.position.y+.004,mesh.position.z+.14));
+        const points=[...first.getPoints(36),...second.getPoints(36).slice(1)].map(p=>new T.Vector3(p.x+mesh.position.x,p.y+mesh.position.y+.006,mesh.position.z+.18));
         const path=new T.CatmullRomCurve3(points); paths.push(path);
-        const trace=new T.Mesh(new T.TubeGeometry(path,100,.006,5,false),new T.MeshStandardMaterial({color:0xabb6d1,emissive:0x7987b4,emissiveIntensity:.1,transparent:true,opacity:.16}));
+        // Embedded groove with crisp ceramic trench presence
+        const trace=new T.Mesh(new T.TubeGeometry(path,100,.016,8,false),new T.MeshStandardMaterial({
+          color:traceColors[i],
+          emissive:traceColors[i],
+          emissiveIntensity:.2,
+          transparent:true,
+          opacity:.22,
+        }));
         traces.push(trace); group.add(trace);
       }
-      dot=new T.Mesh(new T.SphereGeometry(.02,12,8),new T.MeshBasicMaterial({color:0x8999db})); dot.visible=false; group.add(dot);
+      dot=new T.Mesh(new T.SphereGeometry(.036,16,12),new T.MeshBasicMaterial({color:pulseColors[0]}));
+      dot.visible=false; group.add(dot);
       resize(); select(selected); paint(); root.dataset.renderState='ready';
     } catch(error) { failed=true; release(); root.dataset.renderState='fallback'; console.warn('[tidal] Static artwork fallback',error); }
     finally { loading=false; }
   };
   function select(index:number) {
     selected=Math.max(0,Math.min(2,index));
-    traces.forEach((trace,i)=>{trace.material.opacity=i===selected ? .7 : .12;});
+    traces.forEach((trace,i)=>{
+      const isCur=i===selected;
+      trace.material.opacity=isCur ? .92 : .18;
+      trace.material.emissiveIntensity=isCur ? .85 : .15;
+    });
+    meshes.forEach((mesh,i)=>{
+      const isCur=i===selected;
+      mesh.material.roughness=isCur ? .14 : .24;
+      mesh.material.clearcoat=isCur ? 1.0 : .85;
+    });
+    if(dot) {
+      (dot.material as Three.MeshBasicMaterial).color.setHex(pulseColors[selected]);
+    }
     if(reduced) { paint(); return; }
     pulseStart=performance.now(); wake();
   }

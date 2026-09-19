@@ -20,9 +20,18 @@ const sheets = [
   </header>
   <section class="research-desk" aria-label="研究过程的纸页概念示意" data-research-desk data-selection="0">
     <div class="desk-registration"><span>FIELDNOTES — STUDY 02</span><span>概念示意 / 非产品截图</span></div>
-    <svg class="desk-threads" viewBox="0 0 1000 350" preserveAspectRatio="none" aria-hidden="true"><path d="M140 160 C280 15 240 320 390 165 S660 20 650 160 S780 310 875 135"/><path d="M140 168 C300 70 270 210 390 178 S580 260 655 173 S800 60 875 145"/></svg>
     <div class="desk-sheets" role="tablist" aria-label="选择一个研究阶段">
-      {sheets.map((s,i) => <button type="button" class="desk-sheet" role="tab" id={`desk-tab-${i}`} aria-controls={`desk-panel-${i}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1} style={`--sheet-order:${i}`}><span class="eyebrow">{s.tag}</span><strong>{s.label}</strong><span class="sheet-rule"></span><span class="sheet-thought">{s.text}</span><span class="sheet-mark" aria-hidden="true">{s.en}</span></button>)}
+      <svg class="desk-threads" viewBox="0 0 1000 320" preserveAspectRatio="none" aria-hidden="true">
+        <path class="thread-path thread-path-base" d="M 85 20 Q 110 26 133 35 C 210 82, 310 88, 387 52 C 455 86, 545 78, 615 30 C 695 86, 790 92, 869 58 Q 895 68 920 80"/>
+        <path class="thread-path thread-path-harmonic" d="M 133 35 C 215 58, 305 64, 387 52 C 460 62, 540 52, 615 30 C 700 58, 785 68, 869 58"/>
+        <g class="thread-pins">
+          <circle cx="133" cy="35" r="3.5" class="thread-pin thread-pin-0" />
+          <circle cx="387" cy="52" r="3.5" class="thread-pin thread-pin-1" />
+          <circle cx="615" cy="30" r="3.5" class="thread-pin thread-pin-2" />
+          <circle cx="869" cy="58" r="3.5" class="thread-pin thread-pin-3" />
+        </g>
+      </svg>
+      {sheets.map((s,i) => <button type="button" class="desk-sheet" role="tab" id={`desk-tab-${i}`} aria-controls={`desk-panel-${i}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1} style={`--sheet-order:${i}`}><span class="sheet-pin-rivet" aria-hidden="true"></span><span class="eyebrow">{s.tag}</span><strong>{s.label}</strong><span class="sheet-rule"></span><span class="sheet-thought">{s.text}</span><span class="sheet-mark" aria-hidden="true">{s.en}</span></button>)}
     </div>
     {sheets.map((s,i) => <div class="desk-caption" role="tabpanel" id={`desk-panel-${i}`} aria-labelledby={`desk-tab-${i}`}><span>0{i+1}</span><p>{s.text} 这是对工作方式的概念表达；实际能力以界面和源码为准。</p></div>)}
   </section>

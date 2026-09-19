@@ -70,9 +70,10 @@ export class ClothController {
     this.renderer.setClearColor(0x000000,0);this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.1;
     this.scene=new T.Scene();this.camera=new T.PerspectiveCamera(34,1,.1,50);
     this.camera.position.set(...this.cfg.cameraPos);this.camera.lookAt(...this.cfg.cameraTarget);
-    this.scene.add(new T.HemisphereLight(0xf8faff,0x9ca1ad,1.3));
-    const key=new T.DirectionalLight(0xffffff,3.1);key.position.set(-3,4,5);this.scene.add(key);
-    const fill=new T.DirectionalLight(0xc9c5eb,.65);fill.position.set(4,-1,3);this.scene.add(fill);
+    this.scene.add(new T.HemisphereLight(0xffffff,0xe4e6f4,1.6));
+    const key=new T.DirectionalLight(0xfffdf7,3.2);key.position.set(-3.2,4.5,4.8);this.scene.add(key);
+    const fill=new T.DirectionalLight(0xd5d2f6,1.1);fill.position.set(4.2,1.2,3.0);this.scene.add(fill);
+    const rim=new T.DirectionalLight(0xf4e6f0,.75);rim.position.set(0,-3.5,3.5);this.scene.add(rim);
     const sx=this.cfg.segmentsX,sy=this.cfg.segmentsY,count=(sx+1)*(sy+1);
     const p=new Float32Array(count*3),uv=new Float32Array(count*2),indices:number[]=[];
     this.offsets=Array.from({length:4},()=>new Float32Array(count*3));
@@ -88,7 +89,7 @@ export class ClothController {
     if(geometry.boundingSphere)geometry.boundingSphere.radius+=1;
     this.rest=new Float32Array(p);this.texture=createWeaveNormal(T);
     this.texture.anisotropy=Math.min(4,this.renderer.capabilities.getMaxAnisotropy());
-    const material=new T.MeshPhysicalMaterial({color:0xf4f5f8,roughness:.78,metalness:0,clearcoat:0,sheen:.7,sheenColor:0xc7c8e1,sheenRoughness:.72,normalMap:this.texture,normalScale:new T.Vector2(.38,.38),side:T.DoubleSide});
+    const material=new T.MeshPhysicalMaterial({color:0xfbfcff,roughness:.54,metalness:0,clearcoat:.15,clearcoatRoughness:.35,sheen:1,sheenColor:0xdcd8fa,sheenRoughness:.45,iridescence:.32,iridescenceIOR:1.34,iridescenceThicknessRange:[120,360],transmission:.1,thickness:.35,normalMap:this.texture,normalScale:new T.Vector2(.42,.42),side:T.DoubleSide});
     this.mesh=new T.Mesh(geometry,material);this.scene.add(this.mesh);
     this.raycaster=new T.Raycaster();this.ndc=new T.Vector2();
     this.container.dataset.clothVertices=String(count);this.container.dataset.clothMaterial='woven-normal';
@@ -129,11 +130,15 @@ export class ClothController {
     for(let i=0;i<p.count;i++){
       const u=uv.getX(i),v=uv.getY(i),k=i*3;
       const dx=(u-this.uv.x)*this.cfg.width,dy=(v-this.uv.y)*this.cfg.height;
-      const force=Math.exp(-(dx*dx+dy*dy)/(radius*radius*.5))*this.strength;
+      const dist=Math.hypot(dx,dy);
+      const force=Math.exp(-(dist*dist)/(radius*radius*.48))*this.strength;
+      const ridge=Math.exp(-Math.pow(dist-radius*.78,2)/(radius*radius*.22))*this.strength*.26;
       const ambient=Math.sin(this.elapsed*.55+u*4+v*2)*.018*Math.sin(u*Math.PI)*Math.sin(v*Math.PI);
       for(let axis=0;axis<3;axis++){
         let target=this.rest[k+axis];for(let n=0;n<4;n++)target+=this.offsets[n][k+axis]*this.weights[n];
-        if(axis===2)target+=ambient-force*this.cfg.maxDepression;
+        if(axis===0&&dist>0)target+=-dx*force*.06;
+        else if(axis===1&&dist>0)target+=-dy*force*.06;
+        else if(axis===2)target+=ambient-(force-ridge)*this.cfg.maxDepression;
         p.array[k+axis]+=(target-p.array[k+axis])*settle;
       }
     }

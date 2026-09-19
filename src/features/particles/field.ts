@@ -200,9 +200,10 @@ export function mountParticleField(
         targetX += (pointerFocus.x + particle.shapeTarget.x - targetX) * shapeMix;
         targetY += (pointerFocus.y + particle.shapeTarget.y - targetY) * shapeMix;
       } else if (pointerFocus && shapeMix > .001) {
-        const influence = pointerInfluence(particle.homeX, particle.homeY, pointerFocus.x, pointerFocus.y) * shapeMix;
-        targetX += (pointerFocus.x - targetX) * influence;
-        targetY += (pointerFocus.y - targetY) * influence;
+        const { pull, swirlX, swirlY } = pointerInfluence(particle.homeX, particle.homeY, pointerFocus.x, pointerFocus.y);
+        const influence = pull * shapeMix;
+        targetX += (pointerFocus.x - targetX) * influence + swirlX * shapeMix;
+        targetY += (pointerFocus.y - targetY) * influence + swirlY * shapeMix;
       }
       if (gathering > .001) {
         const localGather = smooth((gathering - particle.gatherDelay) / (1 - particle.gatherDelay));
