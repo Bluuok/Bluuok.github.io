@@ -19,8 +19,8 @@
 .hand-art { width: 100%; height: auto; display: block; user-select: none; }
 .fingertip-anchor { position: absolute; width: 0; height: 0; }
 .ambient-light { position: absolute; left: var(--contact-x); top: var(--contact-y); width: min(90vw, 850px); height: 340px; transform: translate(-50%, -50%); background: radial-gradient(ellipse at 35% 48%, #c1dcff80, transparent 50%), radial-gradient(ellipse at 65% 53%, #dec4fa70, transparent 50%), radial-gradient(ellipse at 50% 58%, #f8d5e980, transparent 60%); opacity: .3; }
-.contact-core { position: absolute; left: var(--contact-x); top: var(--contact-y); width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: white; box-shadow: 0 0 17px 5px white, 0 0 45px 14px #bbbaf4, 0 0 85px 35px #e5dafa; opacity: 0; transform: scale(.2); }
-.light-ring { position: absolute; left: var(--contact-x); top: var(--contact-y); width: 180px; height: 180px; margin: -90px 0 0 -90px; border-radius: 50%; border: 1px solid #c4b8f6; box-shadow: 0 0 30px #aabbfa55, inset 0 0 30px #e3c2ec55; opacity: 0; transform: scale(.1); }
+.contact-core { position: absolute; left: var(--contact-x); top: var(--contact-y); width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: white; box-shadow: 0 0 17px 5px white, 0 0 45px 20px #8e89ed, 0 0 110px 48px #aca4eb99; opacity: 0; transform: scale(.2); }
+.light-ring { position: absolute; left: var(--contact-x); top: var(--contact-y); width: 180px; height: 180px; margin: -90px 0 0 -90px; border-radius: 50%; border: 2px solid #8a80d9; box-shadow: 0 0 26px #9183eaa0, inset 0 0 28px #aba1eb90; opacity: 0; transform: scale(.1); }
 .intro[data-art-state='unavailable'] .scene { display: none; }
 .exposure { position: absolute; inset: 0; background: var(--bg); z-index: 6; opacity: 0; pointer-events: none; }
 .arrival { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding-inline: 25px; z-index: 7; opacity: 0; pointer-events: none; }

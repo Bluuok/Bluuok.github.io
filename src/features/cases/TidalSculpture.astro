@@ -18,6 +18,7 @@ const top = 'M80 195 C180 178 180 65 300 92 C412 113 407 202 550 183';
       {[0,1,2].map(i => <g transform={`translate(${i*12} ${i*44})`}><path d={`${top} L550 216 C414 240 380 152 304 127 C194 90 218 222 80 238Z`} fill={['url(#tidalIvory)','url(#tidalForest)','url(#tidalTeal)'][i]} stroke="#d8dde8" stroke-width=".7"/><path d={top} fill="none" stroke="#fff" stroke-width="2.5"/><path d={top} fill="none" stroke={['#d4a558','#3a8f69','#328ea4'][i]} stroke-width="1" stroke-dasharray="8 12" opacity=".7"/></g>)}
     </svg>
   </div>
+  <div class="tidal-controls"><span>移动观察 · 按住拖转</span><button type="button" data-touch-view aria-pressed="false">三维查看</button><button type="button" data-reset-view>复位视角</button></div>
   <div class="installation-caption"><span>STUDY / TIDAL ORDER</span><span>概念装置 · 非实时状态</span></div>
   <div class="tidal-tabs" role="tablist" aria-label="查看入口说明">
     {entries.map((e,i) => <button role="tab" type="button" id={`tidal-tab-${i}`} aria-controls={`tidal-panel-${i}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1}><span>0{i+1}</span>{e[0]}</button>)}
@@ -29,3 +30,5 @@ const top = 'M80 195 C180 178 180 65 300 92 C412 113 407 202 550 183';
   import { mountTidal } from './tidal';
   document.querySelectorAll<HTMLElement>('[data-tidal]').forEach(root => { const scene = mountTidal(root); mountTabs(root, index => scene.select(index)); });
 </script>
+
+<style>.tidal-controls{display:flex;gap:16px;align-items:center;justify-content:flex-end;font-size:12px;padding:8px 0;color:var(--muted)}.tidal-controls button{padding:8px 12px;border:1px solid #b8c4d5;background:transparent;border-radius:20px;cursor:pointer}@media(pointer:fine){[data-touch-view]{display:none}}</style>

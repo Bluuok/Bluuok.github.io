@@ -1,18 +1,12 @@
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { spawn } from 'node:child_process';
+import { startStaticPreview } from './static-preview.mjs';
 import assert from 'node:assert/strict';
 
 const output = 'review-output';
 await mkdir(`${output}/screenshots`, { recursive: true });
-const server = spawn('python3', ['-m','http.server','4321','--bind','127.0.0.1','--directory','dist'], { stdio:'ignore' });
-const base = 'http://127.0.0.1:4321';
-let ready = false;
-for (let i=0; i<50; i++) {
-  try { if ((await fetch(base)).ok) { ready = true; break; } } catch {}
-  await new Promise(resolve => setTimeout(resolve,100));
-}
-if (!ready) { server.kill(); throw new Error('Preview server did not start'); }
+const preview=await startStaticPreview();
+const base=preview.base;
 const browser = await chromium.launch({ headless:true, args:['--enable-unsafe-swiftshader','--use-angle=swiftshader'] });
 const report = { commit:process.env.GITHUB_SHA ?? 'local', browser:browser.version(), platform:process.platform, checks:[], errors:[], notes:['Chromium software GPU in CI. Mobile sizes are viewport emulation, not physical mobile devices or field performance.'] };
 const routes = [['home','/'],['clawtide','/projects/clawtide/'],['threadcove','/projects/threadcove/'],['playground','/playground/']];
@@ -84,9 +78,9 @@ try {
         if(name === 'threadcove') {
           const desk = page.locator('[data-research-desk]');
           await desk.scrollIntoViewIfNeeded(); await verifyTabs(page,desk,`${label}: research stages`);
-          const rect = await desk.boundingBox();
-          await page.mouse.move(rect.x+rect.width*.8,rect.y+rect.height*.5); await page.waitForTimeout(300);
-          check(`${label}: paper response`,await desk.evaluate(e => Math.abs(parseFloat(e.style.getPropertyValue('--desk-x'))) > .1));
+          const paper=desk.locator('[data-paper-cloth]'); await paper.scrollIntoViewIfNeeded();
+          await page.waitForFunction(()=>document.querySelector('[data-paper-cloth]')?.getAttribute('data-cloth-state')==='running');
+          check(`${label}: shared paper physics`,await paper.getAttribute('data-cloth-solver')==='xpbd');
           await screenshot(page,`desk-${viewport.width}`);
         }
         if(name === 'clawtide'||name === 'threadcove') {
@@ -145,6 +139,6 @@ try {
   }
 } finally {
   await writeFile(`${output}/browser-results.json`,JSON.stringify(report,null,2));
-  await browser.close(); server.kill();
+  await browser.close(); await preview.close();
 }
 assert.equal(report.errors.length,0,report.errors.join('\n'));

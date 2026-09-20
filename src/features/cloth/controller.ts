@@ -1,150 +1,133 @@
 import type * as Three from 'three';
 import { clothConfig, type ClothConfig } from './config';
-import { getRestVertex, getAuthoredOffset } from './geometry';
+import { ClothSolver, resolveClothContacts } from './solver';
 import { createWeaveNormal } from './material';
 import { subscribeMotion } from '../../lib/motion';
-
-/** One owner for the mesh, listeners, observers, texture and frame loop. */
+type Surface={mesh:Three.Mesh<Three.BufferGeometry,Three.MeshPhysicalMaterial>;solver:ClothSolver};
+/** One rendering/lifecycle owner; both installations share the same physical solver. */
 export class ClothController {
-  private canvas: HTMLCanvasElement;
-  private abort = new AbortController();
-  private disposed=false; private visible=false; private reduced=false;
-  private loaded=false; private loading=false; private failed=false; private lost=false;
-  private running=false; private frame=0; private time=0; private elapsed=0;
-  private T:typeof Three|null=null; private renderer:Three.WebGLRenderer|null=null;
-  private scene:Three.Scene|null=null; private camera:Three.PerspectiveCamera|null=null;
-  private mesh:Three.Mesh<Three.BufferGeometry,Three.MeshPhysicalMaterial>|null=null;
-  private texture:Three.DataTexture|null=null; private raycaster:Three.Raycaster|null=null;
-  private ndc:Three.Vector2|null=null;
-  private rest:Float32Array|null=null; private offsets:Float32Array[]=[];
-  private weights=[0,0,0,0]; private pointer={x:0,y:0,inside:false};
-  private uv={x:.5,y:.5}; private strength=0;
-  private resizeObserver:ResizeObserver|null=null; private observer:IntersectionObserver|null=null;
-  private unsub:(()=>void)|null=null;
-  constructor(private container:HTMLElement, private cfg:ClothConfig=clothConfig){
+  private abort=new AbortController();private canvas:HTMLCanvasElement;
+  private disposed=false;private visible=false;private reduced=false;private loading=false;private failed=false;private lost=false;
+  private frame=0;private last=0;private T:typeof Three|null=null;
+  private renderer:Three.WebGLRenderer|null=null;private scene:Three.Scene|null=null;private camera:Three.PerspectiveCamera|null=null;
+  private texture:Three.DataTexture|null=null;private surfaces:Surface[]=[];
+  private ray:Three.Raycaster|null=null;private ndc:Three.Vector2|null=null;
+  private pointer={x:0,y:0,inside:false};private previousHit:{x:number;y:number;time:number;surface:Surface}|null=null;
+  private grabbed:Surface|null=null;private pointerId:number|null=null;private plane:Three.Plane|null=null;
+  private observer:IntersectionObserver|null=null;private ro:ResizeObserver|null=null;private unsub:(()=>void)|null=null;
+  constructor(private container:HTMLElement,private cfg:ClothConfig=clothConfig){
     const canvas=container.querySelector('canvas');if(!canvas)throw new Error('Cloth canvas missing');this.canvas=canvas;
   }
   init(){
     const signal=this.abort.signal;
-    this.unsub=subscribeMotion(m=>{this.reduced=m.isReduced;this.sync();});
-    this.resizeObserver=new ResizeObserver(()=>{this.clear();this.resize();});this.resizeObserver.observe(this.container);
+    this.unsub=subscribeMotion(m=>{this.reduced=m.isReduced;if(this.reduced)this.clear();this.sync();});
     this.observer=new IntersectionObserver(([e])=>{this.visible=!!e?.isIntersecting;this.sync();});this.observer.observe(this.container);
-    const move=(e:PointerEvent)=>{
-      if(this.reduced||this.disposed)return;
-      const r=this.container.getBoundingClientRect();
-      this.pointer={x:(e.clientX-r.left)/r.width*2-1,y:1-(e.clientY-r.top)/r.height*2,inside:true};
-    };
-    this.container.addEventListener('pointermove',move,{passive:true,signal});
-    this.container.addEventListener('pointerdown',move,{passive:true,signal});
-    for(const name of ['pointerleave','pointercancel','pointerup'])this.container.addEventListener(name,()=>this.clear(),{signal});
+    this.ro=new ResizeObserver(()=>{this.clear();this.resize();});this.ro.observe(this.container);
+    this.container.addEventListener('pointermove',e=>this.move(e),{passive:true,signal});
+    this.container.addEventListener('pointerdown',e=>{
+      if(e.button!==0||e.pointerType==='touch'||this.reduced)return;
+      this.move(e);const hit=this.hit();if(!hit||!this.T||!this.camera)return;
+      this.grabbed=hit.surface;this.pointerId=e.pointerId;this.container.setPointerCapture(e.pointerId);
+      this.grabbed.solver.beginGrab(hit.local.x,hit.local.y,hit.local.z);
+      const normal=this.camera.getWorldDirection(new this.T.Vector3());
+      this.plane=new this.T.Plane().setFromNormalAndCoplanarPoint(normal,hit.world);
+      this.container.dataset.grabbed='true';
+    },{signal});
+    this.container.addEventListener('pointerleave',()=>{if(!this.grabbed)this.clear();},{signal});
+    for(const event of ['pointerup','pointercancel','lostpointercapture'])this.container.addEventListener(event,()=>this.clear(),{signal});
     window.addEventListener('blur',()=>this.clear(),{signal});
-    window.addEventListener('scroll',()=>this.clear(),{passive:true,signal});
+    window.addEventListener('scroll',()=>{if(!this.grabbed)this.clear();},{passive:true,signal});
     document.addEventListener('visibilitychange',()=>{this.clear();this.sync();},{signal});
-    window.addEventListener('pagehide',(e)=>{if(e.persisted){this.stop();this.reset();}else this.dispose();},{signal});
+    this.canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.lost=true;this.clear();this.stop();this.container.dataset.clothState='fallback';},{signal});
+    this.canvas.addEventListener('webglcontextrestored',()=>{this.lost=false;this.sync();},{signal});
+    window.addEventListener('pagehide',e=>{if(e.persisted){this.clear();this.stop();}else this.dispose();},{signal});
     window.addEventListener('pageshow',()=>this.sync(),{signal});
-    this.canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.lost=true;this.stop();this.clear();this.container.dataset.clothState='fallback';},{signal});
-    this.canvas.addEventListener('webglcontextrestored',()=>{this.lost=false;this.reset();this.sync();},{signal});
   }
-  private clear(){this.pointer.inside=false;this.container.dataset.pointerHit='false';}
-  private stop(){this.running=false;cancelAnimationFrame(this.frame);this.frame=0;}
+  private move(e:PointerEvent){
+    if(this.reduced||this.disposed||e.pointerType==='touch')return;
+    const r=this.container.getBoundingClientRect();
+    this.pointer={x:(e.clientX-r.left)/r.width*2-1,y:1-(e.clientY-r.top)/r.height*2,inside:true};
+    if(!this.ray||!this.ndc||!this.camera||!this.T)return;
+    this.ray.setFromCamera(this.ndc.set(this.pointer.x,this.pointer.y),this.camera);
+    if(this.grabbed&&this.plane){
+      const world=this.ray.ray.intersectPlane(this.plane,new this.T.Vector3());
+      if(world){const local=this.grabbed.mesh.worldToLocal(world);const c=this.cfg;
+        this.grabbed.solver.moveGrab(Math.max(-c.width,Math.min(c.width,local.x)),Math.max(-c.height*.75,Math.min(c.height*.75,local.y)),Math.max(-.7,Math.min(1.5,local.z)));}
+      return;
+    }
+    const hit=this.hit();this.container.dataset.pointerHit=String(!!hit);
+    if(hit){const now=performance.now(),prev=this.previousHit;
+      const dt=prev?Math.max(.016,(now-prev.time)/1000):.016;
+      hit.surface.solver.gustAt(hit.local.x,hit.local.y,prev?.surface===hit.surface?(hit.local.x-prev.x)/dt:0,prev?.surface===hit.surface?(hit.local.y-prev.y)/dt:0);
+      this.previousHit={x:hit.local.x,y:hit.local.y,time:now,surface:hit.surface};
+    }else this.previousHit=null;
+  }
+  private hit(){
+    if(!this.ray||!this.ndc||!this.camera||!this.pointer.inside)return null;
+    this.ray.setFromCamera(this.ndc.set(this.pointer.x,this.pointer.y),this.camera);
+    this.scene?.updateMatrixWorld(true);
+    const result=this.ray.intersectObjects(this.surfaces.map(s=>s.mesh),false)[0];if(!result)return null;
+    const surface=this.surfaces.find(s=>s.mesh===result.object)!;
+    return {surface,world:result.point.clone(),local:surface.mesh.worldToLocal(result.point.clone())};
+  }
+  private clear(){
+    this.pointer.inside=false;this.previousHit=null;this.grabbed?.solver.endGrab();this.grabbed=null;this.plane=null;
+    const id=this.pointerId;this.pointerId=null;if(id!==null&&this.container.hasPointerCapture(id))this.container.releasePointerCapture(id);
+    this.container.dataset.pointerHit='false';this.container.dataset.grabbed='false';
+  }
+  private stop(){cancelAnimationFrame(this.frame);this.frame=0;}
   private sync(){
     if(this.disposed||this.lost)return;
-    const active=this.visible&&!document.hidden&&!this.reduced;
-    if(!this.loaded){
-      this.container.dataset.clothState=this.failed?'fallback':this.reduced?'static':this.loading?'loading':'idle';
-      if(active&&!this.loading&&!this.failed)void this.load();return;
-    }
-    this.container.dataset.clothState=active?'running':this.reduced?'static':'paused';
-    if(active&&!this.running){this.running=true;this.time=performance.now();this.frame=requestAnimationFrame(this.tick);}
-    else if(!active){this.stop();this.clear();this.reset();}
+    const active=this.visible&&!this.reduced&&!document.hidden;
+    if(!this.renderer){this.container.dataset.clothState=this.failed?'fallback':this.reduced?'static':'idle';if(active&&!this.loading&&!this.failed)void this.load();return;}
+    this.container.dataset.clothState=this.reduced?'static':active?'running':'paused';
+    if(active&&!this.frame){this.last=performance.now();this.frame=requestAnimationFrame(this.tick);}
+    else if(!active){this.stop();this.clear();if(this.reduced){this.surfaces.forEach(s=>s.solver.reset());this.updateMeshes();}this.paint();}
   }
   private async load(){
-    this.loading=true;this.container.dataset.clothState='loading';
-    try{this.T=await import('three');if(this.disposed)return;this.build();this.loaded=true;}
-    catch(error){this.failed=true;this.release();console.warn('[cloth] Static artwork fallback',error);}
+    this.loading=true;
+    try{this.T=await import('three');if(this.disposed)return;this.build();}
+    catch(e){this.failed=true;this.release();console.warn('[cloth] Static fallback',e);}
     finally{this.loading=false;this.sync();}
   }
   private build(){
     const T=this.T!;
-    this.renderer=new T.WebGLRenderer({canvas:this.canvas,alpha:true,antialias:true,powerPreference:'low-power'});
-    this.renderer.setClearColor(0x000000,0);this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.1;
+    this.renderer=new T.WebGLRenderer({canvas:this.canvas,alpha:true,antialias:true});
+    this.renderer.setClearColor(0,0);this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1;
     this.scene=new T.Scene();this.camera=new T.PerspectiveCamera(34,1,.1,50);
     this.camera.position.set(...this.cfg.cameraPos);this.camera.lookAt(...this.cfg.cameraTarget);
-    this.scene.add(new T.HemisphereLight(0xffffff,0xe4e6f4,1.6));
-    const key=new T.DirectionalLight(0xfffdf7,3.2);key.position.set(-3.2,4.5,4.8);this.scene.add(key);
-    const fill=new T.DirectionalLight(0xd5d2f6,1.1);fill.position.set(4.2,1.2,3.0);this.scene.add(fill);
-    const rim=new T.DirectionalLight(0xf4e6f0,.75);rim.position.set(0,-3.5,3.5);this.scene.add(rim);
-    const sx=this.cfg.segmentsX,sy=this.cfg.segmentsY,count=(sx+1)*(sy+1);
-    const p=new Float32Array(count*3),uv=new Float32Array(count*2),indices:number[]=[];
-    this.offsets=Array.from({length:4},()=>new Float32Array(count*3));
-    const presets=['north','south','east','west'] as const;
-    for(let j=0;j<=sy;j++)for(let i=0;i<=sx;i++){
-      const u=i/sx,v=j/sy,n=i+j*(sx+1),pt=getRestVertex(u,v,this.cfg);
-      p.set([pt.x,pt.y,pt.z],n*3);uv.set([u,v],n*2);
-      presets.forEach((preset,k)=>{const o=getAuthoredOffset(u,v,preset);this.offsets[k].set([o.x,o.y,o.z],n*3);});
+    this.scene.add(new T.HemisphereLight(0xf7f8ff,0x56617a,1.1));
+    const key=new T.DirectionalLight(0xfff5ea,2.5);key.position.set(-4,5,3);this.scene.add(key);
+    const rim=new T.DirectionalLight(0xb8c3ef,1.3);rim.position.set(3,1,-3);this.scene.add(rim);
+    this.texture=createWeaveNormal(T);const count=this.cfg.paper?3:1;
+    for(let n=0;n<count;n++){
+      const solver=new ClothSolver({...this.cfg,wind:this.cfg.wind*(1+n*.2)}),sx=this.cfg.segmentsX,sy=this.cfg.segmentsY;
+      const geometry=new T.PlaneGeometry(this.cfg.width,this.cfg.height,sx,sy);
+      // PlaneGeometry is row-major, top to bottom, matching the solver.
+      geometry.setAttribute('position',new T.BufferAttribute(solver.positions,3).setUsage(T.DynamicDrawUsage));geometry.computeVertexNormals();
+      const material=new T.MeshPhysicalMaterial({color:this.cfg.paper?[0xa5b9cc,0xc5ccdc,0x91adbc][n]:0xcbd3e4,
+        roughness:this.cfg.paper?.86:.78,metalness:0,sheen:this.cfg.paper?.25:.8,sheenColor:0xe4dcf3,sheenRoughness:.8,
+        clearcoat:0,transmission:0,normalMap:this.texture,normalScale:new T.Vector2(.18,.18),side:T.DoubleSide});
+      const mesh=new T.Mesh(geometry,material);mesh.frustumCulled=false;
+      if(this.cfg.paper)mesh.position.set((n-1)*1.55,n===1?.2:-.05,(n-1)*.18);
+      this.scene.add(mesh);this.surfaces.push({mesh,solver});
+      // Visible hardware explains the hanging surface and remains at the fixed nodes.
+      for(const index of [0,sx]){const pin=new T.Mesh(new T.SphereGeometry(.045,12,8),new T.MeshStandardMaterial({color:0x526377,metalness:.6,roughness:.4}));
+        pin.position.fromArray(solver.rest,index*3).add(mesh.position);this.scene.add(pin);}
     }
-    for(let j=0;j<sy;j++)for(let i=0;i<sx;i++){const a=i+j*(sx+1),b=a+sx+1;indices.push(a,b,a+1,b,b+1,a+1);}
-    const geometry=new T.BufferGeometry();geometry.setIndex(indices);
-    geometry.setAttribute('position',new T.BufferAttribute(p,3).setUsage(T.DynamicDrawUsage));geometry.setAttribute('uv',new T.BufferAttribute(uv,2));geometry.computeVertexNormals();geometry.computeBoundingSphere();
-    if(geometry.boundingSphere)geometry.boundingSphere.radius+=1;
-    this.rest=new Float32Array(p);this.texture=createWeaveNormal(T);
-    this.texture.anisotropy=Math.min(4,this.renderer.capabilities.getMaxAnisotropy());
-    const material=new T.MeshPhysicalMaterial({color:0xfbfcff,roughness:.54,metalness:0,clearcoat:.15,clearcoatRoughness:.35,sheen:1,sheenColor:0xdcd8fa,sheenRoughness:.45,iridescence:.32,iridescenceIOR:1.34,iridescenceThicknessRange:[120,360],transmission:.1,thickness:.35,normalMap:this.texture,normalScale:new T.Vector2(.42,.42),side:T.DoubleSide});
-    this.mesh=new T.Mesh(geometry,material);this.scene.add(this.mesh);
-    this.raycaster=new T.Raycaster();this.ndc=new T.Vector2();
-    this.container.dataset.clothVertices=String(count);this.container.dataset.clothMaterial='woven-normal';
-    this.resize();this.render();
+    this.ray=new T.Raycaster();this.ndc=new T.Vector2();this.container.dataset.clothMaterial='woven-normal';
+    this.container.dataset.clothSolver='xpbd';this.container.dataset.clothVertices=String(this.surfaces.reduce((sum,s)=>sum+s.solver.positions.length/3,0));
+    this.resize();this.paint();
   }
-  private resize(){
-    if(!this.renderer||!this.camera)return;
-    const width=Math.max(1,this.container.clientWidth),height=Math.max(1,this.container.clientHeight);
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,width<500?1.25:1.5));
-    this.renderer.setSize(width,height,false);this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.render();
-  }
-  private reset(){
-    this.strength=0;this.weights.fill(0);this.elapsed=0;
-    if(this.mesh&&this.rest){const p=this.mesh.geometry.getAttribute('position') as Three.BufferAttribute;p.copyArray(this.rest);p.needsUpdate=true;this.mesh.geometry.computeVertexNormals();this.render();}
-  }
-  private tick=(now:number)=>{
-    if(!this.running||this.disposed)return;
-    const dt=Math.max(0,Math.min(.033,(now-this.time)/1000));this.time=now;this.elapsed+=dt;
-    this.update(dt);this.render();this.frame=requestAnimationFrame(this.tick);
-  };
-  private update(dt:number){
-    if(!this.mesh||!this.rest||!this.camera||!this.raycaster||!this.ndc)return;
-    let hit=false;
-    if(this.pointer.inside){
-      this.ndc.set(this.pointer.x,this.pointer.y);this.raycaster.setFromCamera(this.ndc,this.camera);this.mesh.updateMatrixWorld();
-      const found=this.raycaster.intersectObject(this.mesh)[0];
-      if(found?.uv){this.uv={x:found.uv.x,y:found.uv.y};hit=true;}
-    }
-    this.container.dataset.pointerHit=String(hit);
-    const follow=1-Math.exp(-dt*8), settle=1-Math.exp(-dt*10);
-    this.strength+=((hit?1:0)-this.strength)*follow;
-    const targets=hit?[Math.max(0,this.pointer.y),Math.max(0,-this.pointer.y),Math.max(0,this.pointer.x),Math.max(0,-this.pointer.x)]:[0,0,0,0];
-    const total=Math.max(1,targets.reduce((a,b)=>a+b,0));
-    this.weights.forEach((_,k)=>this.weights[k]+=(targets[k]/total*this.cfg.maxPresetWeight-this.weights[k])*follow);
-    const p=this.mesh.geometry.getAttribute('position') as Three.BufferAttribute;
-    const uv=this.mesh.geometry.getAttribute('uv');
-    const radius=Math.max(.05,this.cfg.pointerRadius);
-    for(let i=0;i<p.count;i++){
-      const u=uv.getX(i),v=uv.getY(i),k=i*3;
-      const dx=(u-this.uv.x)*this.cfg.width,dy=(v-this.uv.y)*this.cfg.height;
-      const dist=Math.hypot(dx,dy);
-      const force=Math.exp(-(dist*dist)/(radius*radius*.48))*this.strength;
-      const ridge=Math.exp(-Math.pow(dist-radius*.78,2)/(radius*radius*.22))*this.strength*.26;
-      const ambient=Math.sin(this.elapsed*.55+u*4+v*2)*.018*Math.sin(u*Math.PI)*Math.sin(v*Math.PI);
-      for(let axis=0;axis<3;axis++){
-        let target=this.rest[k+axis];for(let n=0;n<4;n++)target+=this.offsets[n][k+axis]*this.weights[n];
-        if(axis===0&&dist>0)target+=-dx*force*.06;
-        else if(axis===1&&dist>0)target+=-dy*force*.06;
-        else if(axis===2)target+=ambient-(force-ridge)*this.cfg.maxDepression;
-        p.array[k+axis]+=(target-p.array[k+axis])*settle;
-      }
-    }
-    p.needsUpdate=true;this.mesh.geometry.computeVertexNormals();
-  }
-  private render(){if(!this.lost&&this.renderer&&this.scene&&this.camera)this.renderer.render(this.scene,this.camera);}
-  private release(){this.mesh?.geometry.dispose();this.mesh?.material.dispose();this.texture?.dispose();this.renderer?.dispose();this.renderer?.forceContextLoss();this.mesh=null;this.texture=null;this.renderer=null;this.scene=null;this.rest=null;this.offsets=[];}
-  dispose(){if(this.disposed)return;this.disposed=true;this.stop();this.abort.abort();this.observer?.disconnect();this.resizeObserver?.disconnect();this.unsub?.();this.release();this.container.dataset.clothState='disposed';}
+  private resize(){if(!this.renderer||!this.camera)return;const w=Math.max(1,this.container.clientWidth),h=Math.max(1,this.container.clientHeight);
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();this.paint();}
+  private updateMeshes(){for(const s of this.surfaces){s.mesh.geometry.getAttribute('position').needsUpdate=true;s.mesh.geometry.computeVertexNormals();s.mesh.geometry.computeBoundingSphere();}}
+  private tick=(now:number)=>{this.frame=0;if(this.disposed||!this.visible||this.reduced||document.hidden||this.lost)return;
+    const dt=Math.min(.05,(now-this.last)/1000);this.last=now;const substeps=Math.max(1,Math.ceil(dt*120));
+    for(let i=0;i<substeps;i++){this.surfaces.forEach(s=>s.solver.advance(dt/substeps));
+      if(this.surfaces.length>1)resolveClothContacts(this.surfaces.map(s=>({solver:s.solver,x:s.mesh.position.x,y:s.mesh.position.y,z:s.mesh.position.z})),true);}
+    this.updateMeshes();this.paint();this.frame=requestAnimationFrame(this.tick);};
+  private paint(){if(this.renderer&&this.scene&&this.camera&&!this.lost)this.renderer.render(this.scene,this.camera);}
+  private release(){this.scene?.traverse(o=>{const m=o as Three.Mesh;if(m.isMesh){m.geometry.dispose();(Array.isArray(m.material)?m.material:[m.material]).forEach(v=>v.dispose());}});this.texture?.dispose();this.renderer?.dispose();this.renderer?.forceContextLoss();this.renderer=null;this.scene=null;this.surfaces=[];}
+  dispose(){if(this.disposed)return;this.disposed=true;this.clear();this.stop();this.abort.abort();this.observer?.disconnect();this.ro?.disconnect();this.unsub?.();this.release();this.container.dataset.clothState='disposed';}
 }

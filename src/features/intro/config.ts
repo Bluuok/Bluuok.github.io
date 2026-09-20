@@ -18,7 +18,7 @@ export interface SceneLayout {
 
 export const introConfig = {
   mobileBreakpoint: 640,
-  scrub: .65,
+  scrub: true,
   desktop: {
     contact: { x: .5, y: .63 },
     handWidth: { left: .65, right: .62 },
@@ -35,14 +35,14 @@ export const introConfig = {
   },
   timing: {
     titleOut: .12, titleDuration: .22,
-    approach: .12, approachDuration: .55,
-    zoom: .4, zoomDuration: .3,
-    contact: .67, glowDuration: .1,
-    exposure: .76, exposureDuration: .16,
-    arrival: .84, arrivalDuration: .16,
+    approach: .12, approachDuration: .46,
+    zoom: .35, zoomDuration: .23,
+    contact: .58, glowDuration: .08,
+    exposure: .78, exposureDuration: .14,
+    arrival: .92, arrivalDuration: .08,
   },
 } satisfies {
-  mobileBreakpoint: number; scrub: number;
+  mobileBreakpoint: number; scrub: boolean | number;
   desktop: SceneLayout; mobile: SceneLayout;
   timing: Record<string, number>;
 };

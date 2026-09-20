@@ -1,30 +1,10 @@
-export interface ClothConfig {
-  width: number;
-  height: number;
-  segmentsX: number;
-  segmentsY: number;
-  maxPresetWeight: number;
-  maxDepression: number;
-  pointerRadius: number;
-  idleBreathing: number;
-  damping: number;
-  cameraPos: [number, number, number];
-  cameraTarget: [number, number, number];
-  preloadMargin: string;
+import type { ClothPhysics } from './solver';
+export interface ClothConfig extends ClothPhysics {
+  cameraPos:[number,number,number]; cameraTarget:[number,number,number]; paper?:boolean;
 }
-
-// A bounded interaction study, not a self-colliding physical cloth simulation.
-export const clothConfig: ClothConfig = {
-  width: 4.1,
-  height: 2.85,
-  segmentsX: 52,
-  segmentsY: 46,
-  maxPresetWeight: .65,
-  maxDepression: .18,
-  pointerRadius: .55,
-  idleBreathing: .018,
-  damping: .88,
-  cameraPos: [.65, .8, 5.9],
-  cameraTarget: [0, 0, 0],
-  preloadMargin: '200px',
-};
+export const clothConfig:ClothConfig={width:4.1,height:2.85,segmentsX:28,segmentsY:22,
+  bendCompliance:.0008,wind:2.2,gravity:-4,damping:1.5,
+  cameraPos:[.4,.15,7.4],cameraTarget:[0,-.3,0]};
+export const paperConfig:ClothConfig={width:1.65,height:2.5,segmentsX:16,segmentsY:24,
+  bendCompliance:.000002,wind:.65,gravity:-5,damping:2.1,paper:true,
+  cameraPos:[.6,.2,9.2],cameraTarget:[0,-.25,0]};

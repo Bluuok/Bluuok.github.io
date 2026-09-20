@@ -20,17 +20,12 @@ const sheets = [
   </header>
   <section class="research-desk" aria-label="研究过程的纸页概念示意" data-research-desk data-selection="0">
     <div class="desk-registration"><span>FIELDNOTES — STUDY 02</span><span>概念示意 / 非产品截图</span></div>
+    <div class="paper-installation" data-paper-cloth data-cloth-state="idle">
+      <canvas aria-hidden="true"></canvas>
+      <div class="paper-fallback" aria-hidden="true"><i></i><i></i><i></i></div>
+      <p>掠过，带起一阵风。按住纸面拖动，松手回摆。</p>
+    </div>
     <div class="desk-sheets" role="tablist" aria-label="选择一个研究阶段">
-      <svg class="desk-threads" viewBox="0 0 1000 320" preserveAspectRatio="none" aria-hidden="true">
-        <path class="thread-path thread-path-base" d="M 85 20 Q 110 26 133 35 C 210 82, 310 88, 387 52 C 455 86, 545 78, 615 30 C 695 86, 790 92, 869 58 Q 895 68 920 80"/>
-        <path class="thread-path thread-path-harmonic" d="M 133 35 C 215 58, 305 64, 387 52 C 460 62, 540 52, 615 30 C 700 58, 785 68, 869 58"/>
-        <g class="thread-pins">
-          <circle cx="133" cy="35" r="3.5" class="thread-pin thread-pin-0" />
-          <circle cx="387" cy="52" r="3.5" class="thread-pin thread-pin-1" />
-          <circle cx="615" cy="30" r="3.5" class="thread-pin thread-pin-2" />
-          <circle cx="869" cy="58" r="3.5" class="thread-pin thread-pin-3" />
-        </g>
-      </svg>
       {sheets.map((s,i) => <button type="button" class="desk-sheet" role="tab" id={`desk-tab-${i}`} aria-controls={`desk-panel-${i}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1} style={`--sheet-order:${i}`}><span class="sheet-pin-rivet" aria-hidden="true"></span><span class="eyebrow">{s.tag}</span><strong>{s.label}</strong><span class="sheet-rule"></span><span class="sheet-thought">{s.text}</span><span class="sheet-mark" aria-hidden="true">{s.en}</span></button>)}
     </div>
     {sheets.map((s,i) => <div class="desk-caption" role="tabpanel" id={`desk-panel-${i}`} aria-labelledby={`desk-tab-${i}`}><span>0{i+1}</span><p>{s.text} 这是对工作方式的概念表达；实际能力以界面和源码为准。</p></div>)}
@@ -45,6 +40,23 @@ const sheets = [
 </article>
 <script>
   import { mountTabs } from '../../lib/tabs';
-  import { mountPaperDesk } from './research-desk';
-  document.querySelectorAll<HTMLElement>('[data-research-desk]').forEach(root => { mountTabs(root); mountPaperDesk(root); });
+  import { ClothController } from '../cloth/controller';
+  import { paperConfig } from '../cloth/config';
+  document.querySelectorAll<HTMLElement>('[data-research-desk]').forEach(root => { mountTabs(root); const stage=root.querySelector<HTMLElement>('[data-paper-cloth]'); if(stage){const controller=new ClothController(stage,paperConfig);controller.init();document.addEventListener('astro:before-swap',()=>controller.dispose(),{once:true});} });
 </script>
+
+<style>
+.paper-installation{position:relative;height:clamp(330px,42vw,590px);touch-action:pan-y pinch-zoom;overflow:hidden;}
+.paper-installation canvas{position:absolute;width:100%;height:100%;inset:0;}
+.paper-installation>p{position:absolute;bottom:0;inset-inline:0;text-align:center;font-size:11px;color:var(--muted);pointer-events:none;}
+.paper-fallback{height:80%;display:flex;justify-content:center;gap:3%;align-items:center;}
+.paper-fallback i{width:23%;height:75%;background:linear-gradient(110deg,#cad4df,#e1e6ef,#aebfce);border-radius:0 0 12% 6%;box-shadow:12px 18px 30px #32466012;}
+.paper-fallback i:nth-child(2){translate:0 -16px;}
+.paper-installation:is([data-cloth-state='running'],[data-cloth-state='paused']) .paper-fallback{display:none;}
+.paper-installation:not([data-cloth-state='running']):not([data-cloth-state='paused']) canvas{visibility:hidden;}
+.research-desk .desk-sheets{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;min-height:0;margin-top:28px;}
+.research-desk .desk-sheet{transform:none!important;position:relative;min-height:0;padding:18px 16px;box-shadow:none;border-radius:0;background:transparent;}
+.research-desk .desk-sheet strong{font-size:24px;}
+.research-desk .sheet-pin-rivet,.research-desk .sheet-rule,.research-desk .sheet-mark,.research-desk .sheet-thought{display:none;}
+@media(max-width:640px){.research-desk .desk-sheets{grid-template-columns:repeat(2,1fr)}.paper-installation{height:370px;}}
+</style>

@@ -133,6 +133,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
         end: () => `+=${window.innerHeight * layout.scrollScreens}`,
         scrub: introConfig.scrub,
         invalidateOnRefresh: true,
+        onRefresh: self => { root.dataset.scrollStart=String(self.start); root.dataset.scrollEnd=String(self.end); },
       },
       onUpdate: () => {
         if (!activeTimeline) return;
@@ -145,7 +146,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
           opening.setAttribute('aria-hidden', String(progress > .36));
         }
         if (arrival) {
-          arrival.setAttribute('aria-hidden', String(progress < .88));
+          arrival.setAttribute('aria-hidden', String(progress < .92));
         }
       },
     });
@@ -157,9 +158,9 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
       .to(camera, { scale: layout.zoom, yPercent: layout.cameraShiftY * 100, duration: t.zoomDuration, ease: 'power1.inOut' }, t.zoom)
       .to(query('[data-ambient]'), { opacity: .9, scale: 1.2, duration: .4 }, .22)
       .to(query('[data-core]'), { opacity: 1, scale: 1, duration: t.glowDuration }, t.contact)
-      .to(query('[data-ring]'), { opacity: .65, scale: 1.7, duration: .15 }, t.contact + .02)
+      .to(query('[data-ring]'), { opacity: .95, scale: 1.25, duration: .08 }, t.contact + .02)
       .to(query('[data-exposure]'), { opacity: 1, duration: t.exposureDuration, ease: 'sine.inOut' }, t.exposure)
-      .to(camera, { opacity: 0, duration: .16 }, t.exposure)
+      .to(camera, { opacity: 0, duration: .14 }, t.exposure)
       .fromTo(arrival, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: t.arrivalDuration }, t.arrival);
   };
 
@@ -204,7 +205,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
 
   for (const image of images) image.addEventListener('error', restoreStatic);
   Promise.all(images.map(image => image.decode())).then(() => {
-    if (!disposed && root.dataset.artState !== 'static-reduced') root.dataset.artState = 'ready';
+    if (!disposed) { root.dataset.imagesDecoded='true'; if (root.dataset.artState !== 'static-reduced') { root.dataset.artState = 'ready'; ScrollTrigger.refresh(); } }
   }).catch(() => { if (!disposed) restoreStatic(); });
 
   const cleanup = () => {
