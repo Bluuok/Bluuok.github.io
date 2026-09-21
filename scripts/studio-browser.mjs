@@ -11,7 +11,7 @@ const browser = await chromium.launch({ headless:true, args:['--enable-unsafe-sw
 const report = { commit:process.env.GITHUB_SHA ?? 'local', browser:browser.version(), platform:process.platform, checks:[], errors:[], notes:['Chromium software GPU in CI. Mobile sizes are viewport emulation, not physical mobile devices or field performance.'] };
 const routes = [['home','/'],['clawtide','/projects/clawtide/'],['threadcove','/projects/threadcove/'],['playground','/playground/']];
 const check = (name, ok, details='') => { report.checks.push({ name, pass:!!ok, details }); if (!ok) report.errors.push(name); };
-const screenshot = (page, name, fullPage=false) => page.screenshot({ path:`${output}/screenshots/${name}.png`, fullPage });
+const screenshot = (page, name, fullPage=false) => page.screenshot({ path:`${output}/screenshots/${name}.png`, fullPage, timeout:30000 });
 async function verifyTabs(page, root, label) {
   const tabs = root.locator('[role="tab"]');
   await tabs.last().focus(); await page.keyboard.press('Space');
@@ -36,6 +36,9 @@ try {
         check(`${label}: HTTP`, response?.status() === 200);
         check(`${label}: single heading`, await page.locator('h1').count() === 1);
         check(`${label}: no horizontal overflow`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1));
+        // Cove begins preparing in the first viewport. Capture the complete scene,
+        // rather than racing its asynchronous shader compilation on CI software GPUs.
+        if(name==='threadcove')await page.waitForFunction(()=>document.querySelector('[data-paper-cloth]')?.dataset.clothState==='running',null,{timeout:30000});
         await screenshot(page, `${label}-hero`);
         if (name === 'home') {
           check(`${label}: particles preserved`, await page.locator('particle-field canvas').count() === 1);
@@ -117,7 +120,7 @@ try {
         check(`${label}: no failed HTTP resources`,responses.length===0,responses.join('\n'));
         await page.evaluate(()=>scrollTo({top:0,behavior:'instant'})); await page.waitForTimeout(150);
         await screenshot(page,label,true);
-      } catch(error) { check(`${label}: workflow`,false,String(error)); await screenshot(page,`${label}-failure`); }
+      } catch(error) { check(`${label}: workflow`,false,String(error)); await screenshot(page,`${label}-failure`).catch(captureError=>report.notes.push(`${label}: failure screenshot unavailable: ${captureError.message}`)); }
       check(`${label}: no page errors`,errors.length===0,errors.join('\n'));
       await context.close();
     }
