@@ -1,0 +1,631 @@
+{
+  "commit": "local",
+  "browser": "140.0.7339.16",
+  "platform": "win32",
+  "checks": [
+    {
+      "name": "home-1440: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: particles preserved",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: original hands not loaded",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: live WebGL cloth",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: coated satin material",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: cloth raycast",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: pointer cancellation",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: pointer released",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: reduced static",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: resumed",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "home-1440: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-1440: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: live ceramic sculpture",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: entry tabs: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: entry tabs: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: entry tabs: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: evidence tabs: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: evidence tabs: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: evidence tabs: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "clawtide-1440: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-1440: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: research stages: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: research stages: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: research stages: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: shared paper physics",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: evidence tabs: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: evidence tabs: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: evidence tabs: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "threadcove-1440: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-1440: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: stage rendered by server",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: no startup button",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: no initial scroll hijack",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: timeline follows scroll",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: skip preserves stage",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: reduced static hands",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "playground-1440: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-1440: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: particles preserved",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: original hands not loaded",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: live WebGL cloth",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: coated satin material",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: cloth raycast",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: pointer cancellation",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: pointer released",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: reduced static",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: resumed",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "home-390: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home-390: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: live ceramic sculpture",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: entry tabs: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: entry tabs: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: entry tabs: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: evidence tabs: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: evidence tabs: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: evidence tabs: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "clawtide-390: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide-390: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: research stages: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: research stages: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: research stages: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: shared paper physics",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: evidence tabs: selected tab",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: evidence tabs: one visible panel",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: evidence tabs: Home key",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: real evidence image",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "threadcove-390: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove-390: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: HTTP",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: single heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: no horizontal overflow",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: stage rendered by server",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: no startup button",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: no initial scroll hijack",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: timeline follows scroll",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: skip preserves stage",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: reduced static hands",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: no broken media",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "name": "playground-390: no failed HTTP resources",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground-390: no page errors",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home: no-JS heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "home: no-JS links",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide: no-JS heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide: no-JS links",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "clawtide: no-JS evidence",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove: no-JS heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove: no-JS links",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "threadcove: no-JS evidence",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground: no-JS heading",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "name": "playground: no-JS links",
+      "pass": true,
+      "details": ""
+    }
+  ],
+  "errors": [],
+  "notes": [
+    "Chromium software GPU in CI. Mobile sizes are viewport emulation, not physical mobile devices or field performance."
+  ]
+}

@@ -1,0 +1,294 @@
+{
+  "checks": [
+    {
+      "name": "cloth 1440 fits viewport",
+      "pass": true
+    },
+    {
+      "name": "cove 1440 fits viewport",
+      "pass": true
+    },
+    {
+      "name": "four surfaces 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove keyboard End 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove visual selected 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove keyboard Home 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove mesh click 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove drag 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove drag does not select 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove reduced cards 1440",
+      "pass": true
+    },
+    {
+      "name": "Cove reduced selection 1440",
+      "pass": true
+    },
+    {
+      "name": "tidal 1440 fits viewport",
+      "pass": true
+    },
+    {
+      "name": "ceramic mesh selection 1440",
+      "pass": true
+    },
+    {
+      "name": "ceramic selecting retains rotation 1440",
+      "pass": true
+    },
+    {
+      "name": "no startup gate 1440",
+      "pass": true
+    },
+    {
+      "name": "no scroll hijack 1440",
+      "pass": true
+    },
+    {
+      "name": "spark wheel 1440 0.45",
+      "pass": true,
+      "detail": {
+        "progress": 0.45,
+        "gap": 129.3213313637193,
+        "phase": "gather"
+      }
+    },
+    {
+      "name": "spark wheel 1440 0.58",
+      "pass": true,
+      "detail": {
+        "progress": 0.58,
+        "gap": 0.012976539294861146,
+        "phase": "gather"
+      }
+    },
+    {
+      "name": "fingertips meet 1440",
+      "pass": true,
+      "detail": {
+        "progress": 0.58,
+        "gap": 0.012976539294861146,
+        "phase": "gather"
+      }
+    },
+    {
+      "name": "spark wheel 1440 0.72",
+      "pass": true,
+      "detail": {
+        "progress": 0.72,
+        "gap": 0.01326275828448874,
+        "phase": "core"
+      }
+    },
+    {
+      "name": "spark wheel 1440 0.86",
+      "pass": true,
+      "detail": {
+        "progress": 0.86,
+        "gap": 0.01326275828448874,
+        "phase": "fade"
+      }
+    },
+    {
+      "name": "spark wheel 1440 0.98",
+      "pass": true,
+      "detail": {
+        "progress": 0.98,
+        "gap": 0.01326275828448874,
+        "phase": "hidden"
+      }
+    },
+    {
+      "name": "spark wheel 1440 0.2",
+      "pass": true,
+      "detail": {
+        "progress": 0.2,
+        "gap": 722.4387028042788,
+        "phase": "gather"
+      }
+    },
+    {
+      "name": "skip keeps scene 1440",
+      "pass": true
+    },
+    {
+      "name": "skip reaches content 1440",
+      "pass": true
+    },
+    {
+      "name": "spark reduced pose 1440",
+      "pass": true
+    },
+    {
+      "name": "cloth 390 fits viewport",
+      "pass": true
+    },
+    {
+      "name": "cove 390 fits viewport",
+      "pass": true
+    },
+    {
+      "name": "four surfaces 390",
+      "pass": true
+    },
+    {
+      "name": "Cove keyboard End 390",
+      "pass": true
+    },
+    {
+      "name": "Cove visual selected 390",
+      "pass": true
+    },
+    {
+      "name": "Cove keyboard Home 390",
+      "pass": true
+    },
+    {
+      "name": "Cove mesh click 390",
+      "pass": true
+    },
+    {
+      "name": "Cove drag 390",
+      "pass": true
+    },
+    {
+      "name": "Cove drag does not select 390",
+      "pass": true
+    },
+    {
+      "name": "Cove reduced cards 390",
+      "pass": true
+    },
+    {
+      "name": "Cove reduced selection 390",
+      "pass": true
+    },
+    {
+      "name": "tidal 390 fits viewport",
+      "pass": true
+    },
+    {
+      "name": "ceramic mesh selection 390",
+      "pass": true
+    },
+    {
+      "name": "ceramic selecting retains rotation 390",
+      "pass": true
+    },
+    {
+      "name": "no startup gate 390",
+      "pass": true
+    },
+    {
+      "name": "no scroll hijack 390",
+      "pass": true
+    },
+    {
+      "name": "spark wheel 390 0.45",
+      "pass": true,
+      "detail": {
+        "progress": 0.45,
+        "gap": 56.44651922313967,
+        "phase": "gather"
+      }
+    },
+    {
+      "name": "spark wheel 390 0.58",
+      "pass": true,
+      "detail": {
+        "progress": 0.58,
+        "gap": 0.006365256484754989,
+        "phase": "core"
+      }
+    },
+    {
+      "name": "fingertips meet 390",
+      "pass": true,
+      "detail": {
+        "progress": 0.58,
+        "gap": 0.006365256484754989,
+        "phase": "core"
+      }
+    },
+    {
+      "name": "spark wheel 390 0.72",
+      "pass": true,
+      "detail": {
+        "progress": 0.72,
+        "gap": 0.006365256484754989,
+        "phase": "core"
+      }
+    },
+    {
+      "name": "spark wheel 390 0.86",
+      "pass": true,
+      "detail": {
+        "progress": 0.86,
+        "gap": 0.006365256484754989,
+        "phase": "fade"
+      }
+    },
+    {
+      "name": "spark wheel 390 0.98",
+      "pass": true,
+      "detail": {
+        "progress": 0.98,
+        "gap": 0.006365256484754989,
+        "phase": "hidden"
+      }
+    },
+    {
+      "name": "spark wheel 390 0.2",
+      "pass": true,
+      "detail": {
+        "progress": 0.2,
+        "gap": 321.4428991347637,
+        "phase": "gather"
+      }
+    },
+    {
+      "name": "skip keeps scene 390",
+      "pass": true
+    },
+    {
+      "name": "skip reaches content 390",
+      "pass": true
+    },
+    {
+      "name": "spark reduced pose 390",
+      "pass": true
+    },
+    {
+      "name": "no JS four cards",
+      "pass": true
+    },
+    {
+      "name": "no JS hands present",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "notes": [
+    "Headless Chromium software GPU; viewport emulation is not a physical-device performance measurement."
+  ]
+}

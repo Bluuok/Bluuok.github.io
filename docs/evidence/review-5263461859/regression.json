@@ -1,0 +1,28 @@
+{
+  "fps": [
+    {
+      "hz": 30,
+      "meanPositionDifference": 0.21596227775697446,
+      "maxPositionDifference": 0.9245897470331848
+    },
+    {
+      "hz": 60,
+      "meanPositionDifference": 0.08131955912497629,
+      "maxPositionDifference": 0.36404216592583094
+    },
+    {
+      "hz": 120,
+      "meanPositionDifference": 0,
+      "maxPositionDifference": 0
+    },
+    {
+      "hz": 144,
+      "meanPositionDifference": 0.042667450470305256,
+      "maxPositionDifference": 0.18671427757325054
+    }
+  ],
+  "peak": 177.86399259367673,
+  "inside": 200,
+  "total": 200,
+  "meanThirtySecondDisplacement": 333.2834134389243
+}

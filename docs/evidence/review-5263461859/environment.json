@@ -1,0 +1,12 @@
+{
+  "node": "v24.21.0",
+  "browser": "140.0.7339.16",
+  "platform": "win32",
+  "cpu": "13th Gen Intel(R) Core(TM) i5-13500HX",
+  "logicalCpus": 20,
+  "memoryGB": 16,
+  "defaultHeadlessGPU": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)"
+  }
+}
