@@ -1,3 +1,5 @@
+import baked from './baked-poses.json';
+import {poseKey,validPose} from './pose';
 import { clothConfig } from './config';
 import { ClothSolver } from './solver';
 interface VertexPos { x:number;y:number;z:number }
@@ -15,7 +17,7 @@ export function generateFacetedSvgPoster(): string {
     const d = [p.x-e[0], p.y-e[1], p.z-e[2]], z = dot(d, f);
     return { x: 340 + dot(d,r)*scale/z, y: 200-dot(d,up)*scale/z, z };
   };
-  const solver=new ClothSolver({...clothConfig,wind:0});
+  const solver=new ClothSolver(clothConfig,validPose(clothConfig,(baked as Record<string,any>)[poseKey(clothConfig)]));
   const nx=clothConfig.segmentsX,ny=clothConfig.segmentsY;
   const getRestVertex=(u:number,v:number):VertexPos=>{const k=(Math.round(u*nx)+Math.round(v*ny)*(nx+1))*3;return {x:solver.rest[k],y:solver.rest[k+1],z:solver.rest[k+2]};};
   const facets: { z: number; svg: string }[] = [];

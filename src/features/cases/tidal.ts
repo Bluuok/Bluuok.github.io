@@ -1,3 +1,4 @@
+import {sceneReadiness} from '../../lib/scene-readiness';
 import type * as Three from 'three';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { tidalEntries } from '../../data/studio-art';
@@ -5,6 +6,7 @@ import { subscribeMotion } from '../../lib/motion';
 
 /** Rigid, beveled ceramic shapes. Frames run only during interaction/settling. */
 export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
+  const perf=sceneReadiness('claw');let prepared=false;
   const canvas = root.querySelector('canvas')!;
   const viewport = root.querySelector<HTMLElement>('.tidal-viewport')!;
   const abort = new AbortController();
@@ -22,7 +24,7 @@ export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
   const pulseColors=tidalEntries.map(e=>Number.parseInt(e.accent.slice(1),16));
   const traceColors=pulseColors;
 
-  const paint = () => { if(renderer&&scene&&camera&&!lost)renderer.render(scene,camera); };
+  const paint = () => { if(prepared&&renderer&&scene&&camera&&!lost)renderer.render(scene,camera); };
   const stop = () => { cancelAnimationFrame(frame); frame=0; };
   const reset = () => {
     stop(); x=y=tx=ty=0; pulseStart=-1;
@@ -53,7 +55,7 @@ export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
     if(Math.abs(tx-x)+Math.abs(ty-y)>.0002||dot?.visible||orbitChanged||dragging)frame=requestAnimationFrame(tick);
   };
   const wake = () => {
-    if(!frame&&renderer&&visible&&!reduced&&!document.hidden&&!lost) { last=performance.now(); frame=requestAnimationFrame(tick); }
+    if(!frame&&prepared&&renderer&&visible&&!reduced&&!document.hidden&&!lost) { last=performance.now(); frame=requestAnimationFrame(tick); }
   };
   const resize = () => {
     if(!renderer||!camera)return;
@@ -71,7 +73,7 @@ export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
   };
   const load = async () => {
     if(loading||renderer||disposed||reduced||failed)return;
-    loading=true;
+    loading=true;perf.mark('request');
     try {
       const [T,{OrbitControls},{RoomEnvironment}]=await Promise.all([import('three'),import('three/addons/controls/OrbitControls.js'),import('three/addons/environments/RoomEnvironment.js')]); if(disposed)return;
       renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
@@ -79,7 +81,7 @@ export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
       scene=new T.Scene(); camera=new T.PerspectiveCamera(34,1,.1,50);
       camera.position.set(4.2,3.1,7.1); camera.lookAt(0,.2,0);
       const room=new RoomEnvironment(),pmrem=new T.PMREMGenerator(renderer);
-      environment=pmrem.fromScene(room,.04);scene.environment=environment.texture;room.dispose();pmrem.dispose();
+      environment=pmrem.fromScene(room,.04);scene.environment=environment.texture;room.dispose();pmrem.dispose();perf.mark('environment');
       controls=new OrbitControls(camera,canvas);controls.target.set(0,.2,0);controls.enableZoom=false;controls.enablePan=false;
       controls.enableDamping=true;controls.dampingFactor=.25;controls.rotateSpeed=.65;controls.minPolarAngle=.3;controls.maxPolarAngle=Math.PI-.3;
       controls.update();controls.saveState();
@@ -139,7 +141,7 @@ export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
       canvas.addEventListener('pointermove',e=>{if(press&&e.pointerId===press.id&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>6){press.moved=true;dragged=true;}},{signal:abort.signal});
       canvas.addEventListener('pointerup',e=>{if(press&&e.pointerId===press.id&&!press.moved&&Math.hypot(e.clientX-press.x,e.clientY-press.y)<=6&&press.index>=0&&hit(e)===press.index)onSelect?.(press.index);press=null;},{signal:abort.signal});
       canvas.addEventListener('pointercancel',()=>{press=null;},{signal:abort.signal});
-      resize(); select(selected); paint(); root.dataset.renderState='ready';
+      resize(); select(selected);perf.mark('geometry');await renderer.compileAsync(scene,camera);if(disposed||lost)return;perf.mark('shader');prepared=true;paint();perf.mark('first-render');perf.mark('interactive');root.dataset.renderState='ready';wake();
     } catch(error) { failed=true; release(); root.dataset.renderState='fallback'; console.warn('[tidal] Static artwork fallback',error); }
     finally { loading=false; }
   };
@@ -179,7 +181,7 @@ export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
   },{signal:abort.signal});
   canvas.addEventListener('pointerdown',e=>{if(controls)controls.enabled=!reduced&&(e.pointerType!=='touch'||touchViewing);},{capture:true,signal:abort.signal});
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;stop();root.dataset.renderState='fallback';},{signal:abort.signal});
-  canvas.addEventListener('webglcontextrestored',()=>{lost=false;reset();root.dataset.renderState='ready';},{signal:abort.signal});
+  canvas.addEventListener('webglcontextrestored',()=>{lost=false;if(renderer&&scene&&camera){void renderer.compileAsync(scene,camera).then(()=>{if(disposed||lost)return;prepared=true;reset();root.dataset.renderState='ready';wake();});}else void load();},{signal:abort.signal});
   const dispose=()=>{if(disposed)return;disposed=true;stop();abort.abort();observer.disconnect();ro.disconnect();unsub();release();};
   window.addEventListener('pagehide',e=>{if(e.persisted)reset();else dispose();},{signal:abort.signal});
   window.addEventListener('pageshow',wake,{signal:abort.signal});

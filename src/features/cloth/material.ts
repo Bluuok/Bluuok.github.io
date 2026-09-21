@@ -28,10 +28,9 @@ export const clothMaterials = {
  satin:{color:'#F6F7F8',roughness:.34,clearcoat:.72,clearcoatRoughness:.18,sheen:.18,normalStrength:.035},
  card:{color:'#A9C4EA',roughness:.68,clearcoat:.06,clearcoatRoughness:.4,sheen:.12,normalStrength:.045},
 } as const;
-export function createStageTexture(T:typeof Three,stage:{label:string;en:string;text:string;color:string},index:number,selected=false){
- const canvas=document.createElement('canvas');canvas.width=768;canvas.height=1152;const ctx=canvas.getContext('2d')!;
+export function createStageTexture(T:typeof Three,stage:{label:string;en:string;text:string;color:string},index:number,mobile=false){
+ const canvas=document.createElement('canvas');canvas.width=mobile?384:768;canvas.height=mobile?576:1152;const ctx=canvas.getContext('2d')!;ctx.scale(canvas.width/768,canvas.height/1152);
  ctx.fillStyle=stage.color;ctx.fillRect(0,0,768,1152);ctx.fillStyle='#172332';
- if(selected){ctx.strokeStyle='#f7fbff';ctx.lineWidth=12;ctx.strokeRect(26,26,716,1100);ctx.fillRect(64,72,92,8);}
  ctx.font='500 38px sans-serif';ctx.fillText('0'+(index+1)+' / FIELDNOTES',66,170);
  ctx.font='600 114px sans-serif';ctx.fillText(stage.label,64,420);
  ctx.globalAlpha=.45;ctx.fillRect(66,484,636,2);ctx.globalAlpha=1;

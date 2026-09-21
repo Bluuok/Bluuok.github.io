@@ -1,3 +1,4 @@
+import { SpatialHash } from './spatial-hash';
 /** Original CPU XPBD solver. Distance constraints model stretch, shear and bending.
  * Fixed timesteps keep stiffness independent of render rate. No external simulation code.
  */
@@ -17,7 +18,7 @@ export class ClothSolver {
   private time=0;
   private gust:{x:number;y:number;vx:number;vy:number;life:number}|null=null;
   private grab:{indices:number[];weights:number[];offsets:number[];x:number;y:number;z:number}|null=null;
-  constructor(readonly config:ClothPhysics) {
+  constructor(readonly config:ClothPhysics,pose?:ArrayLike<number>) {
     const {width:w,height:h,segmentsX:nx,segmentsY:ny}=config;
     const count=(nx+1)*(ny+1);
     this.positions=new Float32Array(count*3);this.velocity=new Float32Array(count*3);
@@ -42,9 +43,15 @@ export class ClothSolver {
       if(i<nx-1)add(a,a+2,config.bendCompliance);
       if(j<ny-1)add(a,a+2*(nx+1),config.bendCompliance);
     }
-    for(let i=0;i<180;i++)this.step(1/120,false);
-    this.rest.set(this.positions);this.velocity.fill(0);this.time=0;
+    for(const index of [0,nx])this.positions.set(this.rest.subarray(index*3,index*3+3),index*3);
+    if(pose)this.restorePose(pose);
+    else {this.rest.set(this.positions);this.previous.set(this.positions);}
   }
+  restorePose(pose:ArrayLike<number>){if(pose.length!==this.positions.length)throw new Error('Pose topology mismatch');for(let i=0;i<pose.length;i++)if(!Number.isFinite(pose[i]))throw new Error('Invalid pose');this.positions.set(pose);this.rest.set(pose);this.previous.set(pose);this.velocity.fill(0);this.time=0;this.accumulator=0;}
+  settle(steps=180){for(let i=0;i<steps;i++)this.step(1/120,false);}
+  async prepareRest(signal:AbortSignal){for(let i=0;i<180;i+=6){if(signal.aborted)throw new DOMException('Cancelled','AbortError');this.settle(6);await new Promise(resolve=>setTimeout(resolve,0));}this.restorePose(this.positions);}
+  fixedStep(dt=1/120){this.step(dt,true);}
+  reconcileVelocity(dt=1/120){const damp=Math.exp(-this.config.damping*dt);for(let i=0;i<this.positions.length;i++)this.velocity[i]=Math.max(-12,Math.min(12,(this.positions[i]-this.previous[i])/dt))*damp;}
   gustAt(x:number,y:number,vx:number,vy:number){this.gust={x,y,vx:Math.max(-9,Math.min(9,vx)),vy:Math.max(-9,Math.min(9,vy)),life:.15};}
   beginGrab(x:number,y:number,z:number){
     const indices:number[]=[],weights:number[]=[],offsets:number[]=[];
@@ -111,31 +118,32 @@ export interface ClothContactSurface { solver:ClothSolver; x:number;y:number;z:n
  * Grid neighbours are excluded: their rest separation is governed by stretch/bend.
  * This is a discrete contact approximation, not continuous triangle collision.
  */
+const hashes=new WeakMap<ClothSolver,SpatialHash>();
+function hashFor(s:ClothSolver){let h=hashes.get(s);if(!h){h=new SpatialHash(s.inverseMass.length);hashes.set(s,h);}return h;}
+function resolvePair(a:ClothContactSurface,i:number,b:ClothContactSurface,j:number,gap:number){
+ const p=a.solver.positions,q=b.solver.positions,k=i*3,l=j*3;
+ const dx=p[k]+a.x-q[l]-b.x,dy=p[k+1]+a.y-q[l+1]-b.y,dz=p[k+2]+a.z-q[l+2]-b.z,d2=dx*dx+dy*dy+dz*dz;if(d2>=gap*gap)return;
+ const wa=a.solver.inverseMass[i],wb=b.solver.inverseMass[j],mass=wa+wb;if(!mass)return;
+ const d=Math.sqrt(d2),x=d>1e-8?dx/d:0,y=d>1e-8?dy/d:0,z=d>1e-8?dz/d:1,c=(gap-d)/mass;
+ p[k]+=x*c*wa;p[k+1]+=y*c*wa;p[k+2]+=z*c*wa;q[l]-=x*c*wb;q[l+1]-=y*c*wb;q[l+2]-=z*c*wb;
+}
+const boundsCache=new WeakMap<ClothSolver,Float32Array>();
+function bounds(surface:ClothContactSurface){let b=boundsCache.get(surface.solver);if(!b){b=new Float32Array(6);boundsCache.set(surface.solver,b);}b.set([Infinity,Infinity,Infinity,-Infinity,-Infinity,-Infinity]);const p=surface.solver.positions;for(let i=0;i<p.length;i+=3){b[0]=Math.min(b[0],p[i]+surface.x);b[1]=Math.min(b[1],p[i+1]+surface.y);b[2]=Math.min(b[2],p[i+2]+surface.z);b[3]=Math.max(b[3],p[i]+surface.x);b[4]=Math.max(b[4],p[i+1]+surface.y);b[5]=Math.max(b[5],p[i+2]+surface.z);}return b;}
 export function resolveClothContacts(surfaces:ClothContactSurface[],crossOnly=false){
-  const gap=.115,buckets=new Map<string,{surface:ClothContactSurface;index:number}[]>();
-  for(const surface of surfaces){const solver=surface.solver,p=solver.positions;
-    for(let index=0;index<solver.inverseMass.length;index++){
-      const k=index*3,x=p[k]+surface.x,y=p[k+1]+surface.y,z=p[k+2]+surface.z;
-      const cx=Math.floor(x/gap),cy=Math.floor(y/gap),cz=Math.floor(z/gap);
-      for(let iz=-1;iz<=1;iz++)for(let iy=-1;iy<=1;iy++)for(let ix=-1;ix<=1;ix++){
-        const bucket=buckets.get(`${cx+ix},${cy+iy},${cz+iz}`);if(!bucket)continue;
-        for(const other of bucket){
-          if(other.surface===surface){if(crossOnly)continue;
-            const nx=solver.config.segmentsX+1;
-            if(Math.abs(index%nx-other.index%nx)<=2&&Math.abs(Math.floor(index/nx)-Math.floor(other.index/nx))<=2)continue;
-          }
-          const q=other.surface.solver.positions,j=other.index*3;
-          const dx=p[k]+surface.x-q[j]-other.surface.x,dy=p[k+1]+surface.y-q[j+1]-other.surface.y,dz=p[k+2]+surface.z-q[j+2]-other.surface.z;
-          const d2=dx*dx+dy*dy+dz*dz;if(d2>=gap*gap)continue;
-          const wa=solver.inverseMass[index],wb=other.surface.solver.inverseMass[other.index],mass=wa+wb;if(!mass)continue;
-          const d=Math.sqrt(d2),nx=d>1e-8?dx/d:0,ny=d>1e-8?dy/d:0,nz=d>1e-8?dz/d:1;
-          const correction=(gap-d)/mass;
-          p[k]+=nx*correction*wa;p[k+1]+=ny*correction*wa;p[k+2]+=nz*correction*wa;
-          q[j]-=nx*correction*wb;q[j+1]-=ny*correction*wb;q[j+2]-=nz*correction*wb;
-        }
-      }
-      const key=`${cx},${cy},${cz}`,bucket=buckets.get(key),entry={surface,index};
-      if(bucket)bucket.push(entry);else buckets.set(key,[entry]);
-    }
+ const gap=.115;
+ if(!crossOnly)for(const surface of surfaces){const solver=surface.solver,p=solver.positions,hash=hashFor(solver),nx=solver.config.segmentsX+1;hash.clear();
+  for(let i=0;i<solver.inverseMass.length;i++){const k=i*3,cx=Math.floor(p[k]/gap),cy=Math.floor(p[k+1]/gap),cz=Math.floor(p[k+2]/gap);
+   for(let z=cz-1;z<=cz+1;z++)for(let y=cy-1;y<=cy+1;y++)for(let x=cx-1;x<=cx+1;x++)for(let j=hash.first(x,y,z);j>=0;j=hash.nextId(j)){
+    if(!hash.matches(j,x,y,z)||(Math.abs(i%nx-j%nx)<=2&&Math.abs(Math.floor(i/nx)-Math.floor(j/nx))<=2))continue;resolvePair(surface,i,surface,j,gap);
+   }hash.add(i,cx,cy,cz);
   }
+ }
+ for(let a=0;a<surfaces.length;a++)for(let b=a+1;b<surfaces.length;b++){
+  const one=surfaces[a],two=surfaces[b],A=bounds(one),B=bounds(two);if(A[0]>B[3]+gap||B[0]>A[3]+gap||A[1]>B[4]+gap||B[1]>A[4]+gap||A[2]>B[5]+gap||B[2]>A[5]+gap)continue;
+  const hash=hashFor(two.solver),q=two.solver.positions,p=one.solver.positions;hash.clear();
+  for(let j=0;j<two.solver.inverseMass.length;j++){const k=j*3;hash.add(j,Math.floor((q[k]+two.x)/gap),Math.floor((q[k+1]+two.y)/gap),Math.floor((q[k+2]+two.z)/gap));}
+  for(let i=0;i<one.solver.inverseMass.length;i++){const k=i*3,cx=Math.floor((p[k]+one.x)/gap),cy=Math.floor((p[k+1]+one.y)/gap),cz=Math.floor((p[k+2]+one.z)/gap);
+   for(let z=cz-1;z<=cz+1;z++)for(let y=cy-1;y<=cy+1;y++)for(let x=cx-1;x<=cx+1;x++)for(let j=hash.first(x,y,z);j>=0;j=hash.nextId(j))if(hash.matches(j,x,y,z))resolvePair(one,i,two,j,gap);
+  }
+ }
 }

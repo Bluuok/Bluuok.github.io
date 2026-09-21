@@ -1,9 +1,5 @@
-import {readFile} from 'node:fs/promises';
-import ts from 'typescript';
 import assert from 'node:assert/strict';
-const source=await readFile(new URL('../src/features/cloth/solver.ts',import.meta.url),'utf8');
-const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText;
-const {ClothSolver,resolveClothContacts}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+const {ClothSolver,resolveClothContacts}=await (await import('./load-ts.mjs')).loadTs('src/features/cloth/solver.ts');
 for(const [name,bend] of [['cloth',.0008],['paper',.000002]]){
  const cfg={width:4.1,height:2.85,segmentsX:28,segmentsY:22,bendCompliance:bend,wind:0,gravity:-4,damping:1.5};
  const solver=new ClothSolver(cfg),pins=[0,28*3];
@@ -20,7 +16,7 @@ for(const [name,bend] of [['cloth',.0008],['paper',.000002]]){
  const afterRelease=Math.hypot(...[0,1,2].map(a=>solver.positions[k+a]-released[k+a]));
  assert.ok(afterRelease>.01,name+' continues moving after release');
  for(let i=0;i<120;i++)solver.advance(i%2?1/30:1/120);
- pins.forEach((k,n)=>assert.deepEqual(Array.from(solver.positions.slice(k,k+3)),pinPositions[n],name+' fixed supports'));
+ pins.forEach((k,n)=>assert.ok(Array.from(solver.positions.slice(k,k+3)).every((v,a)=>v===pinPositions[n][a]),name+' fixed supports'));
  assert.ok(solver.positions.every(Number.isFinite),name+' stable under variable frame rate');
  solver.reset();assert.deepEqual(solver.positions,solver.rest);assert.ok(solver.velocity.every(v=>v===0));
  console.log(JSON.stringify({name,displacement,afterRelease,pinsStable:true,finite:true}));
