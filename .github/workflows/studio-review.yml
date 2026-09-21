@@ -28,8 +28,17 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install --with-deps chromium
+      - name: Physics and particle regression
+        run: |
+          node scripts/particle-input-test.mjs
+          node scripts/cloth-physics-test.mjs
+          node scripts/spark-path-test.mjs
+          node scripts/review-regression.mjs
       - name: Browser verification
-        run: node scripts/studio-browser.mjs
+        run: |
+          node scripts/studio-browser.mjs
+          node scripts/polish-browser.mjs
+          node scripts/review-browser.mjs
       - name: Prepare review snapshot
         if: always()
         run: |

@@ -1,3 +1,5 @@
+import {PointerTrail,advanceDust} from './home-flow';
+import {sceneReadiness} from '../../lib/scene-readiness';
 import { sparkStory, sparkParticles, sparkPosition } from '../first-spark/story';
 import { pointerConfig, pointerInfluence } from './interaction';
 import { resolveParticleFieldConfig, type NormalizedPoint, type ParticleFieldOptions } from './config';
@@ -39,6 +41,7 @@ export function mountParticleField(
   const random=()=>{if(!narrative)return Math.random();seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   const between=(min:number,max:number)=>min+random()*(max-min);
   const renderer = config.enabled ? createParticleRenderer(canvas, config.colors, config.bloomScale) : null;
+  const perf=sceneReadiness(narrative?'spark-particles':'home-particles');perf.mark('request');const trail=new PointerTrail();let hasPainted=false;let renderCount=0;
   let cleaned = false;
   let sceneProgress = 0;
   let sceneFocus: NormalizedPoint | null = null;
@@ -152,7 +155,7 @@ export function mountParticleField(
       particle.alpha = fade * (particle.narrativeAlpha ?? 1) * (.55 + particle.depth * .4) *
         (.88 + Math.sin(time * .0012 * particle.twinkle + particle.phase) * .12);
     }
-    renderer.render(particles, config.opacity, bloom);
+    renderer.render(particles, config.opacity, bloom);renderCount++;if(!hasPainted){hasPainted=true;perf.mark('first-render');perf.mark('interactive');}
   };
 
   const resize = () => {
@@ -179,14 +182,17 @@ export function mountParticleField(
 
   const updateNarrative=()=>{
     const focus=sceneFocus??{x:.5,y:.63};
-    particles.forEach((p,i)=>{p.vx=p.vy=0;
-      if(i%100<sparkParticles.ambientRatio*100){p.x=p.homeX;p.y=p.homeY;p.narrativeAlpha=.5;}
-      else {const pos=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress);p.x=pos.x;p.y=pos.y;p.narrativeAlpha=pos.alpha;
-        if(i%100>=95){const ahead=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress+.004);p.vx=ahead.x-pos.x;p.vy=ahead.y-pos.y;p.streak=true;p.narrativeAlpha=Math.min(1,pos.alpha*1.5);}}
+    particles.forEach((p,i)=>{const pos=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress);p.x=pos.x;p.y=pos.y;p.vx=p.vy=0;p.narrativeAlpha=pos.alpha;
+      if(i%23===0){const next=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress+.003);p.vx=next.x-pos.x;p.vy=next.y-pos.y;p.streak=true;}
     });
   };
   const update = (time: number) => {
     if(narrative){updateNarrative();render(time);return;}
+    const seconds=Math.min(.05,Math.max(0,(time-lastTime)/1000));
+    if(pointerConfig.mode!=='shape'){
+      const segments=trail.consume(time);for(let i=0;i<particles.length;i++){const p=particles[i];p.narrativeAlpha=advanceDust(p,seconds,time/1000,width,height,segments);p.streak=i%29===0&&Math.hypot(p.vx,p.vy)>65;}
+      lastTime=time;render(time);return;
+    }
     const delta = Math.min(2, (time - lastTime) / 16.667);
     lastTime = time;
     const wantedShape = pointerStrength(time);
@@ -283,23 +289,26 @@ export function mountParticleField(
       return;
     }
     pointer = { x, y, type: event.pointerType };
+    const samples=event.getCoalescedEvents?.()??[];
+    for(const sample of samples.length?samples:[event])trail.add({x:sample.clientX-bounds.left,y:sample.clientY-bounds.top,t:sample.timeStamp});
     if (event.pointerType === 'touch') touchActiveUntil = performance.now() + 1600;
     host.dataset.pointerActive = 'true';
   };
   const clearPointer = (event?: PointerEvent) => {
     if (event?.type !== 'pointercancel' && event?.pointerType === 'touch' && performance.now() < touchActiveUntil) return;
-    pointer = null;
+    trail.clear();pointer = null;
     previousPointer = null;
     host.dataset.pointerActive = 'false';
   };
-  const handleVisibility = () => { pageVisible = !document.hidden; syncAnimation(); };
-  const handlePageHide = () => { pageVisible = false; syncAnimation(); };
+  const handleVisibility = () => { trail.clear();pageVisible = !document.hidden; syncAnimation(); };
+  const handlePageHide = () => { trail.clear();pageVisible = false; syncAnimation(); };
   const handlePageShow = () => { pageVisible = !document.hidden; syncAnimation(); };
 
   // Subscribe to unified motion controller
   const unsubscribeMotion = subscribeMotion((m: MotionState) => {
     reducedMotion = m.isReduced;
     if (reducedMotion) {
+      trail.clear();
       pointer = null;
       pointerFocus = null;
       previousPointer = null;
@@ -335,6 +344,7 @@ export function mountParticleField(
   window.addEventListener('pageshow', handlePageShow);
   host.dataset.pointerActive = 'false';
   host.dataset.shapeActive = 'false';
+  if(new URLSearchParams(location.search).has('scenePerf'))(host as any).particleSnapshot=()=>({progress:sceneProgress,renderCount,particles:particles.map((p,i)=>({id:i,x:p.x,y:p.y,vx:p.vx,vy:p.vy,alpha:p.alpha,homeX:p.homeX,homeY:p.homeY}))});
   resize();
   syncAnimation();
 
@@ -365,9 +375,12 @@ export function mountParticleField(
     else if (scene.focus && Number.isFinite(scene.focus.x) && Number.isFinite(scene.focus.y)) {
       sceneFocus = { x: clamp01(scene.focus.x), y: clamp01(scene.focus.y) };
     }
-    if(narrative){updateNarrative();render();}
+    // Progress is consumed by the single RAF; callbacks never draw.
     reportPhase(currentPhase());
-    if (wasHidden !== (sceneProgress >= config.phases.fadeEnd)) syncAnimation();
+    if (wasHidden !== (sceneProgress >= config.phases.fadeEnd)) {
+      if(narrative&&sceneProgress>=config.phases.fadeEnd){cancelAnimationFrame(frame);running=false;frame=requestAnimationFrame(()=>{frame=0;updateNarrative();render();});}
+      else syncAnimation();
+    }
   };
   cleanup.resetScene = () => {
     const wasHidden = sceneProgress >= config.phases.fadeEnd;
