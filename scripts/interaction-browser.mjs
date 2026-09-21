@@ -24,7 +24,7 @@ try{
   if(hit){await page.mouse.move(hit.x-40,hit.y);await page.mouse.move(hit.x,hit.y,{steps:5});await page.waitForTimeout(300);await snap(name+'-gust');
    let grabbed=false;
    for(const fy of [.55,.45,.65,.35]){for(const fx of [.5,.4,.6,.3,.7]){
-     hit={x:b.x+b.width*fx,y:b.y+b.height*fy};await page.mouse.move(hit.x,hit.y);await page.mouse.down();
+     hit={x:b.x+b.width*fx,y:b.y+b.height*fy};await page.mouse.move(hit.x,hit.y);await page.mouse.down();await page.mouse.move(hit.x+12,hit.y-8,{steps:2});
      grabbed=await stage.getAttribute('data-grabbed')==='true';if(grabbed)break;await page.mouse.up();
    }if(grabbed)break;}
    check(name+': grab acquired',grabbed);
@@ -42,8 +42,8 @@ try{
  const after=Number(await art.getAttribute('data-azimuth'));check('ceramic: can turn to rear',Math.abs(after-before)>1.5,{before,after});await snap('ceramic-back');
  await page.mouse.move(5,5);await page.waitForTimeout(800);const retained=Number(await art.getAttribute('data-azimuth'));check('ceramic: keeps view',Math.abs(after-retained)<.08,{after,retained});
  await art.locator('[data-reset-view]').click();await page.waitForTimeout(500);check('ceramic: reset',Math.abs(Number(await art.getAttribute('data-azimuth'))-before)<.05);await snap('ceramic-reset');
- await page.goto(preview.base+'/playground/',{waitUntil:'networkidle'});await page.locator('.btn-start-first-spark').click();
- const intro=page.locator('[data-stage-mount] [data-intro]');await page.waitForFunction(()=>document.querySelector('[data-stage-mount] [data-intro]')?.dataset.imagesDecoded==='true');await page.waitForTimeout(800);
+ await page.goto(preview.base+'/playground/',{waitUntil:'networkidle'});
+ const intro=page.locator('[data-inline-spark]');await page.waitForFunction(()=>document.querySelector('[data-inline-spark]')?.dataset.imagesDecoded==='true');await page.waitForTimeout(800);
  const timeline=await intro.evaluate(e=>({start:Number(e.dataset.scrollStart),end:Number(e.dataset.scrollEnd),decoded:e.dataset.imagesDecoded}));
  results.timeline=timeline;
  const sample=()=>intro.evaluate(e=>{const tips=[...e.querySelectorAll('[data-fingertip]')].map(x=>x.getBoundingClientRect());const opacity=s=>Number(getComputedStyle(e.querySelector(s)).opacity);return {progress:Number(e.dataset.progress),gap:Math.hypot(tips[0].x-tips[1].x,tips[0].y-tips[1].y),core:opacity('[data-core]'),ring:opacity('[data-ring]'),camera:opacity('[data-camera]'),exposure:opacity('[data-exposure]'),arrival:opacity('[data-arrival]')};});
@@ -60,7 +60,7 @@ try{
  check('spark: fades after contact',results.fade.camera<.6&&results.fade.exposure>.5,results.fade);
  check('spark: completion',results.complete.arrival>.6&&results.complete.camera<.05,results.complete);
  check('spark: wheel reverses',results.reverse.gap>100&&results.reverse.core<.05&&results.reverse.exposure<.05,results.reverse);
- await page.locator('[data-action="close"]').click();check('spark: cleanup',await page.locator('.pin-spacer').count()===0);
+ await page.locator('.skip-intro').click();check('spark: sticky scene needs no pin spacer',await page.locator('.pin-spacer').count()===0);
 } catch(e){results.errors.push(String(e));await snap('failure');}
 finally{await context.close();await browser.close();await preview.close();await writeFile(`${out}/results.json`,JSON.stringify(results,null,2));}
 console.log(JSON.stringify(results,null,2));if(results.errors.length)process.exitCode=1;

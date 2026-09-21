@@ -2,24 +2,22 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Hand from '../features/intro/Hand.astro';
+import FirstSparkSection from '../features/first-spark/FirstSparkSection.astro';
+import TypeLine from '../components/TypeLine.astro';
 import {experiments} from '../data/experiments';
 import {features} from '../config/features';
-import {introConfig} from '../features/intro/config';
 import {url} from '../lib/urls';
-import '../features/particles/particles.css';
-import '../features/first-spark/first-spark.css';
-const layout=introConfig.desktop,mobile=introConfig.mobile;
-const sceneStyles=[`--contact-x:${layout.contact.x*100}%`,`--contact-y:${layout.contact.y*100}%`,`--left-width:${layout.handWidth.left*100}%`,`--right-width:${layout.handWidth.right*100}%`,`--left-angle:${layout.rotation.left}deg`,`--right-angle:${layout.rotation.right}deg`,`--gap-x:${layout.gap.x*100}cqw`,`--gap-y:${layout.gap.y*100}cqh`,`--mobile-contact-x:${mobile.contact.x*100}%`,`--mobile-contact-y:${mobile.contact.y*100}%`,`--mobile-left-width:${mobile.handWidth.left*100}%`,`--mobile-right-width:${mobile.handWidth.right*100}%`,`--mobile-left-angle:${mobile.rotation.left}deg`,`--mobile-right-angle:${mobile.rotation.right}deg`,`--mobile-gap-x:${mobile.gap.x*100}cqw`,`--mobile-gap-y:${mobile.gap.y*100}cqh`].join(';');
-const items=experiments.filter(e=>e.id!=='first-spark'||features.firstSpark);
+const others=experiments.filter(e=>e.id!=='first-spark');
 ---
-<Layout title="小作品与实验 — Bluuok" description="纸手、光尘与独立交互实验。选择一件作品，自由进入。"><div id="top"></div><Header/><main id="main" tabindex="-1" class="container gallery-page"><header class="gallery-intro"><div class="gallery-intro-top"><span>OPEN EXPERIMENTS / BLUUOK</span><span>{String(items.length).padStart(2,'0')} WORK{items.length===1?'':'S'}</span></div><h1>小作品，<br/>与未设限的好奇。</h1><p>不是所有想法都需要成为产品。<br/>这里收藏那些值得停下来，亲手试一试的瞬间。</p></header>
-  {items.map(exp=><article id={exp.id} class="gallery-feature" data-spark-state="idle"><div class="gallery-card-view" data-card-view><div class="gallery-poster"><img src={url('images/cases/first-spark-cover.jpg')} alt="原版漫画褶皱纸手的静态预览" width="1000" height="600"/><p>原版纸手素材 · 静态构图预览</p></div><div class="gallery-description"><p class="eyebrow">01 / {exp.badge}</p><h2>First Spark<br/>创造之触</h2><p>{exp.summary}</p><p>原来的首页开场，如今成为一件可以主动进入的作品。沿着滚动，让两只纸手相遇，也可以随时退出。</p><dl class="gallery-facts"><div><dt>MEDIUM</dt><dd>纸手图层 / Canvas 光尘</dd></div><div><dt>INTERACTION</dt><dd>正反滚动 / 触碰 / 柔光</dd></div></dl><div class="gallery-actions"><button class="button button-dark btn-start-first-spark" type="button" hidden>开始体验 ↗</button><a class="text-link" href={url('')}>返回首页</a></div><noscript><p class="noscript-hint">静态作品可直接查看，完整交互需要启用 JavaScript。</p></noscript><p class="first-spark-error" aria-live="polite" hidden></p></div></div><div class="first-spark-stage-mount" data-stage-mount hidden></div></article>)}
-  <p class="gallery-footnote">作品按实际收录内容展示，不以虚构项目填充画廊。交互按需加载；关闭动态效果后保留静态构图与浏览入口。</p>
-  {features.firstSpark&&<template id="first-spark-template"><div class="first-spark-active-wrapper" data-spark-wrapper><div class="first-spark-controls" data-controls aria-label="First Spark 体验控制"><button type="button" class="button button-outline btn-spark-close" data-action="close">← 结束体验</button><button type="button" class="button button-outline btn-spark-replay" data-action="replay">↺ 重播</button></div><section class="intro first-spark-intro" data-intro style={sceneStyles} aria-label="创造亚当：交互体验"><div class="intro-stage" data-stage><div class="particle-field" data-particle-host aria-hidden="true"><canvas class="particle-field__canvas" aria-hidden="true"></canvas></div><div class="intro-grain" aria-hidden="true"></div><div class="intro-copy" data-opening><p class="eyebrow"><span class="status-dot"></span>01 / FIRST SPARK</p><h2>每个创造，<br/><span class="iridescent-text">始于一次触碰。</span></h2><p class="intro-description">向下滚动，让纸手与微光相遇。</p></div><div class="scene" data-camera aria-hidden="true"><div class="ambient-light" data-ambient></div><Hand side="left"/><Hand side="right"/><div class="contact-core" data-core></div><div class="light-ring" data-ring></div></div><div class="exposure" data-exposure aria-hidden="true"></div><div class="arrival" data-arrival aria-hidden="true"><p class="eyebrow">THE FIRST SPARK</p><p class="arrival-title">让想法，<br/>成为可以体验的作品。</p><p>这是一件关于触碰的视觉实验。</p></div><div class="intro-bottom"><span class="chapter-label">FIRST SPARK — 滚动分镜</span><div class="scroll-cue"><span class="scroll-line" aria-hidden="true"></span><span data-scroll-label>向下滚动，让灵感相遇</span></div></div></div></section></div></template>}
-</main><Footer/></Layout>
-<script>
-  import {startFirstSpark} from '../features/first-spark/player';
-  const card=document.getElementById('first-spark'),template=document.getElementById('first-spark-template') as HTMLTemplateElement|null;
-  if(card&&template){const cardView=card.querySelector<HTMLElement>('[data-card-view]'),mount=card.querySelector<HTMLElement>('[data-stage-mount]'),button=card.querySelector<HTMLButtonElement>('.btn-start-first-spark'),error=card.querySelector<HTMLElement>('.first-spark-error');if(cardView&&mount&&button&&error){button.hidden=false;button.addEventListener('click',()=>void startFirstSpark({cardEl:card,cardViewEl:cardView,mountEl:mount,templateEl:template,startBtn:button,errorEl:error}));if(location.hash==='#first-spark')button.focus({preventScroll:true});}}
-</script>
+<Layout title="小作品与实验 — Bluuok" description="纸手、光尘与独立交互实验。随滚动，让两个指尖相遇。">
+ <div id="top"></div><Header/>
+ <main id="main" tabindex="-1">
+  <header class="container experiment-heading"><p class="eyebrow">OPEN EXPERIMENTS / BLUUOK</p><h1>小作品与实验。</h1><p><TypeLine text="两个指尖，一次相遇。"/></p><a class="text-link" href="#other-experiments">跳到其他作品 ↓</a></header>
+  {features.firstSpark&&<FirstSparkSection/>}
+  <section id="other-experiments" class="container experiment-list" tabindex="-1" aria-label="其他小作品">
+   {others.map(exp=><article id={exp.id}><p class="eyebrow">{exp.badge}</p><h2>{exp.title}</h2><p>{exp.summary}</p><p>{exp.description}</p></article>)}
+   <p class="gallery-footnote">{others.length?'每件作品，都是一次独立的尝试。':'更多小作品，将在完成后收录。'}</p><a class="text-link" href={url('')}>返回首页 ↗</a>
+  </section>
+ </main><Footer/>
+</Layout>
+<style>.experiment-heading{padding-block:38px 20px}.experiment-heading h1{font-size:clamp(30px,4vw,48px);font-weight:450;letter-spacing:-.05em;margin:12px 0}.experiment-heading>p{color:var(--muted);margin-bottom:10px}.experiment-heading>a{font-size:12px}.experiment-list{padding-block:55px 90px;scroll-margin-top:100px}.experiment-list .gallery-footnote{margin:0 0 22px}</style>

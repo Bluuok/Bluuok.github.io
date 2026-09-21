@@ -1,4 +1,5 @@
 ---
+import TypeLine from '../../components/TypeLine.astro';
 import ParticleField from '../particles/ParticleField.astro';
 import { site } from '../../data/site';
 import { url } from '../../lib/urls';
@@ -9,6 +10,6 @@ const destination=hasProjects?url('#projects'):url('playground/');
 ---
 <section class="particle-hero studio-hero" aria-labelledby="hero-title">
   {features.particles&&<ParticleField class="hero-particle-field"/>}
-  <div class="container hero-content"><p class="eyebrow">{site.eyebrow}</p><h1 id="hero-title">{site.headline[0]}<br/><span class="hero-spectrum">{site.headline[1]}</span></h1><p class="hero-intro">{site.intro}</p><div class="hero-actions"><a class="button button-dark" href={destination}>{hasProjects?'查看精选作品':'浏览小作品与实验'} <span aria-hidden="true">↓</span></a>{hasProjects&&<a class="button button-outline" href={url('playground/')}>小作品与实验 <span aria-hidden="true">↗</span></a>}</div></div>
+  <div class="container hero-content"><p class="eyebrow">{site.eyebrow}</p><h1 id="hero-title">{site.headline[0]}<br/><span class="hero-spectrum">{site.headline[1]}</span></h1><p class="hero-intro"><TypeLine text={site.intro}/></p><div class="hero-actions"><a class="button button-dark" href={destination}>{hasProjects?'查看精选作品':'浏览小作品与实验'} <span aria-hidden="true">↓</span></a>{hasProjects&&<a class="button button-outline" href={url('playground/')}>小作品与实验 <span aria-hidden="true">↗</span></a>}</div></div>
   <div class="hero-edition container"><span>BLUUOK / DIGITAL ATELIER</span><a href={features.cloth?'#wind':destination}>{features.cloth?'向下，感受风的形状':'继续浏览'} <span aria-hidden="true">↓</span></a><span>LIGHT · MATERIAL · CODE</span></div>
 </section>

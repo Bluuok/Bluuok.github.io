@@ -1,3 +1,4 @@
+import { sparkStory } from '../first-spark/story';
 export type HandSide = 'left' | 'right';
 
 // Full transparent-image coordinates, not the visible bounding box.
@@ -35,11 +36,11 @@ export const introConfig = {
   },
   timing: {
     titleOut: .12, titleDuration: .22,
-    approach: .12, approachDuration: .46,
+    approach: sparkStory.approach, approachDuration: sparkStory.contact-sparkStory.approach,
     zoom: .35, zoomDuration: .23,
-    contact: .58, glowDuration: .08,
-    exposure: .78, exposureDuration: .14,
-    arrival: .92, arrivalDuration: .08,
+    contact: sparkStory.contact, glowDuration: .08,
+    exposure: sparkStory.holdEnd, exposureDuration: sparkStory.fadeEnd-sparkStory.holdEnd,
+    arrival: sparkStory.fadeEnd, arrivalDuration: 1-sparkStory.fadeEnd,
   },
 } satisfies {
   mobileBreakpoint: number; scrub: boolean | number;

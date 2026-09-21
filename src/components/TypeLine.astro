@@ -1,0 +1,23 @@
+---
+interface Props {text:string}
+const {text}=Astro.props;
+---
+<span class="type-line" data-type-line data-text={text}><span class="type-line__original">{text}</span><span class="type-line__visual" aria-hidden="true"></span></span>
+<script>
+ import { mountTypeLine } from '../features/type-line';
+ document.querySelectorAll<HTMLElement>('[data-type-line]').forEach(mountTypeLine);
+</script>
+<style>
+.type-line{position:relative;display:inline-grid;vertical-align:baseline;max-width:100%;}
+.type-line__original,.type-line__visual{grid-area:1/1;}
+.type-line__visual{visibility:hidden;}
+.type-line[data-enhanced] .type-line__original{opacity:0;}
+.type-line[data-enhanced] .type-line__visual{visibility:visible;}
+.type-line__visual :global(.type-letter){visibility:hidden;}
+.type-line__visual :global(.type-letter.shown){visibility:visible;}
+.type-line__visual :global(.type-letter.caret){position:relative;}
+.type-line__visual :global(.type-letter.caret)::after{content:'';position:absolute;left:100%;top:.08em;height:1em;width:2px;background:linear-gradient(#56c1cd,#7294ed,#9f76d6,#d58cad);animation:type-blink 1s steps(2,end) 4;}
+.type-line[data-paused] :global(.type-letter.caret)::after{animation-play-state:paused;opacity:0;}
+@keyframes type-blink{50%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.type-line[data-enhanced] .type-line__original{opacity:1}.type-line[data-enhanced] .type-line__visual{visibility:hidden}}
+</style>

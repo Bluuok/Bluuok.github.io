@@ -1,9 +1,10 @@
 import type * as Three from 'three';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { tidalEntries } from '../../data/studio-art';
 import { subscribeMotion } from '../../lib/motion';
 
 /** Rigid, beveled ceramic shapes. Frames run only during interaction/settling. */
-export function mountTidal(root: HTMLElement) {
+export function mountTidal(root: HTMLElement, onSelect?:(index:number)=>void) {
   const canvas = root.querySelector('canvas')!;
   const viewport = root.querySelector<HTMLElement>('.tidal-viewport')!;
   const abort = new AbortController();
@@ -17,9 +18,9 @@ export function mountTidal(root: HTMLElement) {
   const traces:Three.Mesh<Three.TubeGeometry,Three.MeshStandardMaterial>[]=[];
   const paths:Three.CatmullRomCurve3[]=[];
   let dot:Three.Mesh<Three.SphereGeometry,Three.MeshBasicMaterial>|null=null;
-  const baseColors=[0x829fb9, 0x8db9ad, 0xb3a3c7];
-  const pulseColors=[0xdaa250, 0x2f8c62, 0x22879f];
-  const traceColors=[0xa68958, 0x327d5d, 0x287a91];
+  const baseColors=tidalEntries.map(e=>Number.parseInt(e.color.slice(1),16));
+  const pulseColors=tidalEntries.map(e=>Number.parseInt(e.accent.slice(1),16));
+  const traceColors=pulseColors;
 
   const paint = () => { if(renderer&&scene&&camera&&!lost)renderer.render(scene,camera); };
   const stop = () => { cancelAnimationFrame(frame); frame=0; };
@@ -84,7 +85,7 @@ export function mountTidal(root: HTMLElement) {
       controls.update();controls.saveState();
       controls.enabled=matchMedia('(pointer:fine)').matches&&!reduced;
       canvas.style.touchAction='pan-y pinch-zoom';
-      controls.addEventListener('start',()=>{dragging=true;dragged=true;tx=x;ty=y;wake();});
+      controls.addEventListener('start',()=>{dragging=true;tx=x;ty=y;wake();});
       controls.addEventListener('end',()=>{dragging=false;wake();});
       controls.addEventListener('change',()=>{paint();if(!updatingControls)wake();});
       scene.add(new T.HemisphereLight(0xffffff,0xe6eaf2,.7));
@@ -131,6 +132,13 @@ export function mountTidal(root: HTMLElement) {
       }
       dot=new T.Mesh(new T.SphereGeometry(.036,16,12),new T.MeshBasicMaterial({color:pulseColors[0]}));
       dot.visible=false; group.add(dot);
+      const ray=new T.Raycaster(),ndc=new T.Vector2();
+      let press:{x:number;y:number;id:number;index:number;moved:boolean}|null=null;
+      const hit=(e:PointerEvent)=>{const rect=canvas.getBoundingClientRect();ndc.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);scene!.updateMatrixWorld(true);ray.setFromCamera(ndc,camera!);const h=ray.intersectObjects(meshes,false)[0];return h?meshes.indexOf(h.object as typeof meshes[number]):-1;};
+      canvas.addEventListener('pointerdown',e=>{if(e.button===0)press={x:e.clientX,y:e.clientY,id:e.pointerId,index:hit(e),moved:false};},{signal:abort.signal});
+      canvas.addEventListener('pointermove',e=>{if(press&&e.pointerId===press.id&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>6){press.moved=true;dragged=true;}},{signal:abort.signal});
+      canvas.addEventListener('pointerup',e=>{if(press&&e.pointerId===press.id&&!press.moved&&Math.hypot(e.clientX-press.x,e.clientY-press.y)<=6&&press.index>=0&&hit(e)===press.index)onSelect?.(press.index);press=null;},{signal:abort.signal});
+      canvas.addEventListener('pointercancel',()=>{press=null;},{signal:abort.signal});
       resize(); select(selected); paint(); root.dataset.renderState='ready';
     } catch(error) { failed=true; release(); root.dataset.renderState='fallback'; console.warn('[tidal] Static artwork fallback',error); }
     finally { loading=false; }

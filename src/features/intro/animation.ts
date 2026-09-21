@@ -24,14 +24,14 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
   const arrival = root.querySelector<HTMLElement>('[data-arrival]');
   const images = [...root.querySelectorAll<HTMLImageElement>('.hand-art')];
   let disposed = false;
-  let lastFocusRead = 0;
+  let imagesReady=root.dataset.imagesDecoded==='true';
   let particleFocus: { x: number; y: number } | null = null;
   let activeTimeline: gsap.core.Timeline | null = null;
 
   const updateParticleScene = (progress: number) => {
     if (!particleField?.setScene) return;
-    const now = performance.now();
-    if (fingertips.length === 2 && now - lastFocusRead >= 32) {
+
+    if (fingertips.length === 2) {
       const stageBounds = stage.getBoundingClientRect();
       const left = fingertips[0]!.getBoundingClientRect();
       const right = fingertips[1]!.getBoundingClientRect();
@@ -40,7 +40,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
           x: ((left.left + right.left) / 2 - stageBounds.left) / stageBounds.width,
           y: ((left.top + right.top) / 2 - stageBounds.top) / stageBounds.height,
         };
-        lastFocusRead = now;
+
       }
     }
     particleField.setScene({ progress, focus: particleFocus });
@@ -68,7 +68,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
     gsap.set(root.querySelectorAll('[data-camera], [data-hand], [data-opening], [data-arrival], [data-ambient], [data-core], [data-ring], [data-exposure]'), { clearProps: 'transform,opacity' });
     delete root.dataset.progress;
     particleFocus = null;
-    lastFocusRead = 0;
+
   };
 
   const restoreStatic = () => {
@@ -110,7 +110,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
   };
 
   const buildTimeline = () => {
-    if (disposed || root.dataset.artState === 'unavailable') return;
+    if (disposed || !imagesReady || root.dataset.artState === 'unavailable') return;
     killTimeline();
 
     const isMobile = window.innerWidth < introConfig.mobileBreakpoint;
@@ -128,7 +128,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
       scrollTrigger: {
         id: triggerId,
         trigger: root,
-        pin: stage,
+        pin: root.hasAttribute('data-inline-spark') ? false : stage,
         start: 'top top',
         end: () => `+=${window.innerHeight * layout.scrollScreens}`,
         scrub: introConfig.scrub,
@@ -178,7 +178,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
     if (state.isReduced) {
       applyStaticReducedPose();
     } else {
-      if (root.dataset.artState === 'static-reduced' || !activeTimeline) {
+      if (imagesReady && (root.dataset.artState === 'static-reduced' || !activeTimeline)) {
         root.dataset.artState = 'ready';
         buildTimeline();
         ScrollTrigger.refresh();
@@ -205,7 +205,7 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
 
   for (const image of images) image.addEventListener('error', restoreStatic);
   Promise.all(images.map(image => image.decode())).then(() => {
-    if (!disposed) { root.dataset.imagesDecoded='true'; if (root.dataset.artState !== 'static-reduced') { root.dataset.artState = 'ready'; ScrollTrigger.refresh(); } }
+    if (!disposed) { imagesReady=true; root.dataset.imagesDecoded='true'; if (!getMotionState().isReduced) { root.dataset.artState = 'ready'; if(!activeTimeline)buildTimeline(); ScrollTrigger.refresh(); activeTimeline?.scrollTrigger?.update(); updateParticleScene(activeTimeline?.progress()??0); } }
   }).catch(() => { if (!disposed) restoreStatic(); });
 
   const cleanup = () => {

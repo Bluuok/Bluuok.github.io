@@ -51,10 +51,7 @@
 .tidal-tabs{display:flex;gap:24px;border-top:1px solid var(--case-line);}
 .tidal-tabs button{display:flex;gap:8px;align-items:center;padding:14px 0;min-height:46px;font-size:12px;border-top:2px solid transparent;margin-top:-1px;color:var(--muted);transition:color .2s,border-color .2s;}
 .tidal-tabs button span{font:9px var(--font-mono);color:#979fb0;}
-.tidal-tabs button[aria-selected='true']{border-color:#537ce9;color:var(--ink);font-weight:500;}
-.tidal-tabs button#tidal-tab-0[aria-selected='true']{border-color:#c99343;}
-.tidal-tabs button#tidal-tab-1[aria-selected='true']{border-color:#2e7e59;}
-.tidal-tabs button#tidal-tab-2[aria-selected='true']{border-color:#2a859e;}
+.tidal-tabs button[aria-selected='true']{border-color:var(--entry-color,#537ce9);color:var(--ink);font-weight:500;}
 .tidal-caption{font-size:12px;line-height:1.9;color:var(--muted);min-height:50px;max-width:510px;margin-top:4px;}
 /* Research desk: editorial masthead and actual overlapping paper silhouettes. */
 .research-masthead{display:grid;grid-template-columns:1.25fr .75fr;align-items:end;gap:45px;padding:70px 0 35px;}

@@ -1,3 +1,4 @@
+import { sparkStory, sparkParticles, sparkPosition } from '../first-spark/story';
 import { pointerConfig, pointerInfluence } from './interaction';
 import { resolveParticleFieldConfig, type NormalizedPoint, type ParticleFieldOptions } from './config';
 import { createParticleRenderer, type RenderParticle } from './renderer';
@@ -7,7 +8,7 @@ import { subscribeMotion, type MotionState } from '../../lib/motion';
 interface Particle extends RenderParticle {
   homeX: number; homeY: number; phase: number;
   orbitAngle: number; orbitRadius: number; twinkle: number; gatherDelay: number;
-  shapeTarget?: ShapeTarget;
+  shapeTarget?: ShapeTarget; narrativeAlpha?:number;
 }
 
 export interface ParticleSceneInput {
@@ -26,14 +27,17 @@ const smooth = (value: number) => {
   const t = clamp01(value);
   return t * t * (3 - 2 * t);
 };
-const randomBetween = (min: number, max: number) => min + Math.random() * (max - min);
 
 export function mountParticleField(
   canvas: HTMLCanvasElement,
   host: HTMLElement,
   options: ParticleFieldOptions = {},
 ): ParticleFieldMount {
-  const config = resolveParticleFieldConfig(options);
+  const narrative=host.dataset.particleScene==='first-spark';
+  const config = resolveParticleFieldConfig(narrative?{...options,phases:{shapeEnd:sparkStory.approach,gatherEnd:sparkStory.contact,coreEnd:sparkStory.holdEnd,fadeEnd:sparkStory.fadeEnd},gatherRadius:sparkParticles.coreRadius}:options);
+  let seed:number=sparkParticles.seed;
+  const random=()=>{if(!narrative)return Math.random();seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  const between=(min:number,max:number)=>min+random()*(max-min);
   const renderer = config.enabled ? createParticleRenderer(canvas, config.colors, config.bloomScale) : null;
   let cleaned = false;
   let sceneProgress = 0;
@@ -92,8 +96,8 @@ export function mountParticleField(
   const makeHome = (index: number) => {
     const region = config.region;
     if (index % 5 < 2) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = Math.sqrt(-2 * Math.log(Math.max(.0001, Math.random())));
+      const angle = random() * Math.PI * 2;
+      const radius = Math.sqrt(-2 * Math.log(Math.max(.0001, random())));
       return {
         x: Math.min(region.x + region.width, Math.max(region.x,
           config.shape.center.x + Math.cos(angle) * radius * .2)) * width,
@@ -102,12 +106,13 @@ export function mountParticleField(
       };
     }
     return {
-      x: (region.x + Math.random() * region.width) * width,
-      y: (region.y + Math.random() * region.height) * height,
+      x: (region.x + random() * region.width) * width,
+      y: (region.y + random() * region.height) * height,
     };
   };
 
   const rebuildParticles = () => {
+    seed=sparkParticles.seed;
     const count = particleCount();
     const shapeCount = Math.round(count * config.shape.particleRatio);
     const shapeScale = Math.min(1.15, Math.max(.68, height / 1000));
@@ -115,7 +120,7 @@ export function mountParticleField(
     const targets = createShapeTargets(shapeCount, { ...config.shape, size: config.shape.size * shapeScale });
     particles = Array.from({ length: count }, (_, index) => {
       const home = makeHome(index);
-      const depth = Math.random();
+      const depth = random();
       return {
         x: home.x,
         y: home.y,
@@ -123,15 +128,15 @@ export function mountParticleField(
         homeY: home.y,
         vx: 0,
         vy: 0,
-        radius: randomBetween(config.minRadius, config.maxRadius),
+        radius: between(config.minRadius, config.maxRadius),
         depth,
-        colorIndex: Math.floor(Math.random() * config.colors.length),
+        colorIndex: Math.floor(random() * config.colors.length),
         alpha: .2 + depth * .7,
-        phase: Math.random() * Math.PI * 2,
-        orbitAngle: Math.random() * Math.PI * 2,
-        orbitRadius: Math.sqrt(-2 * Math.log(Math.max(.0001, Math.random()))) * config.gatherRadius * .5 / .35,
-        gatherDelay: Math.random() * .28,
-        twinkle: randomBetween(.45, 1.35),
+        phase: random() * Math.PI * 2,
+        orbitAngle: random() * Math.PI * 2,
+        orbitRadius: Math.sqrt(-2 * Math.log(Math.max(.0001, random()))) * config.gatherRadius * .5 / .35,
+        gatherDelay: random() * .28,
+        twinkle: between(.45, 1.35),
         streak: index % 29 === 0,
         shapeTarget: targets[index],
       };
@@ -144,7 +149,7 @@ export function mountParticleField(
     const fade = sceneProgress <= coreEnd ? 1 : 1 - smooth((sceneProgress - coreEnd) / Math.max(.001, fadeEnd - coreEnd));
     const bloom = sceneProgress < shapeEnd ? shapeMix * .45 : smooth((sceneProgress - (gatherEnd - .2)) / .2);
     for (const particle of particles) {
-      particle.alpha = fade * (.55 + particle.depth * .4) *
+      particle.alpha = fade * (particle.narrativeAlpha ?? 1) * (.55 + particle.depth * .4) *
         (.88 + Math.sin(time * .0012 * particle.twinkle + particle.phase) * .12);
     }
     renderer.render(particles, config.opacity, bloom);
@@ -172,7 +177,16 @@ export function mountParticleField(
     return 1;
   };
 
+  const updateNarrative=()=>{
+    const focus=sceneFocus??{x:.5,y:.63};
+    particles.forEach((p,i)=>{p.vx=p.vy=0;
+      if(i%100<sparkParticles.ambientRatio*100){p.x=p.homeX;p.y=p.homeY;p.narrativeAlpha=.5;}
+      else {const pos=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress);p.x=pos.x;p.y=pos.y;p.narrativeAlpha=pos.alpha;
+        if(i%100>=95){const ahead=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress+.004);p.vx=ahead.x-pos.x;p.vy=ahead.y-pos.y;p.streak=true;p.narrativeAlpha=Math.min(1,pos.alpha*1.5);}}
+    });
+  };
   const update = (time: number) => {
+    if(narrative){updateNarrative();render(time);return;}
     const delta = Math.min(2, (time - lastTime) / 16.667);
     lastTime = time;
     const wantedShape = pointerStrength(time);
@@ -259,7 +273,7 @@ export function mountParticleField(
   };
 
   const setPointer = (event: PointerEvent) => {
-    if (reducedMotion || !pageVisible || !visible) return;
+    if (narrative || reducedMotion || !pageVisible || !visible) return;
     const bounds = host.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
@@ -351,6 +365,7 @@ export function mountParticleField(
     else if (scene.focus && Number.isFinite(scene.focus.x) && Number.isFinite(scene.focus.y)) {
       sceneFocus = { x: clamp01(scene.focus.x), y: clamp01(scene.focus.y) };
     }
+    if(narrative){updateNarrative();render();}
     reportPhase(currentPhase());
     if (wasHidden !== (sceneProgress >= config.phases.fadeEnd)) syncAnimation();
   };

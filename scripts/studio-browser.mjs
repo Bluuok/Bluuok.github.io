@@ -14,7 +14,7 @@ const check = (name, ok, details='') => { report.checks.push({ name, pass:!!ok, 
 const screenshot = (page, name, fullPage=false) => page.screenshot({ path:`${output}/screenshots/${name}.png`, fullPage });
 async function verifyTabs(page, root, label) {
   const tabs = root.locator('[role="tab"]');
-  await tabs.last().click();
+  await tabs.last().focus(); await page.keyboard.press('Space');
   check(`${label}: selected tab`, await tabs.last().getAttribute('aria-selected') === 'true');
   check(`${label}: one visible panel`, await root.locator('[role="tabpanel"]:visible').count() === 1);
   await tabs.last().focus(); await page.keyboard.press('Home');
@@ -44,7 +44,7 @@ try {
           await cloth.scrollIntoViewIfNeeded();
           await page.waitForFunction(() => document.querySelector('#cloth-stage')?.getAttribute('data-cloth-state') === 'running');
           check(`${label}: live WebGL cloth`, await cloth.getAttribute('data-cloth-state') === 'running');
-          check(`${label}: woven normal material`, await cloth.getAttribute('data-cloth-material') === 'woven-normal');
+          check(`${label}: coated satin material`, await cloth.getAttribute('data-cloth-material') === 'coated-white-satin');
           await screenshot(page, `cloth-${viewport.width}`);
           const bounds = await cloth.boundingBox(); let hit = false;
           for(const x of [.35,.5,.65]) {
@@ -53,7 +53,7 @@ try {
           }
           check(`${label}: cloth raycast`,hit); await page.waitForTimeout(450);
           await screenshot(page, `cloth-pointer-${viewport.width}`);
-          await cloth.dispatchEvent('pointercancel',{pointerType:'touch'}); await page.waitForTimeout(150);
+          await cloth.locator('canvas').dispatchEvent('pointercancel',{pointerType:'touch'}); await page.waitForTimeout(150);
           check(`${label}: pointer cancellation`,await cloth.getAttribute('data-pointer-hit') === 'false');
           await page.mouse.move(2,2); await page.waitForTimeout(1300);
           check(`${label}: pointer released`,await cloth.getAttribute('data-pointer-hit') === 'false');
@@ -96,26 +96,19 @@ try {
           await screenshot(page,`evidence-${name}-${viewport.width}`);
         }
         if(name === 'playground') {
-          check(`${label}: opt-in original artwork`,!requests.some(u=>/paper-hand/.test(u)));
-          const card = page.locator('#first-spark');
-          await card.locator('.btn-start-first-spark').click();
-          await page.waitForFunction(()=>document.querySelector('#first-spark')?.getAttribute('data-spark-state') === 'active');
-          await page.waitForTimeout(900);
-          check(`${label}: hands loaded on demand`,requests.some(u=>/paper-hand/.test(u)));
-          const intro = page.locator('[data-stage-mount] [data-intro]');
-          const rootY = await intro.evaluate(e=>e.getBoundingClientRect().top+scrollY);
-          await page.evaluate(y=>scrollTo({top:y+innerHeight*.9,behavior:'instant'}),rootY); await page.waitForTimeout(900);
-          await screenshot(page,`first-spark-${viewport.width}`);
-          await card.locator('[data-action="replay"]').click(); await page.waitForTimeout(250);
-          check(`${label}: replay`,Number(await intro.getAttribute('data-progress')) < .05);
-          await card.locator('[data-action="close"]').click(); await page.waitForTimeout(300);
-          check(`${label}: close removes stage`,await page.locator('[data-stage-mount] [data-intro]').count() === 0);
-          check(`${label}: close removes pin spacer`,await page.locator('.pin-spacer').count() === 0);
-          check(`${label}: focus restored`,await card.locator('.btn-start-first-spark').evaluate(e=>e === document.activeElement));
-          await card.locator('.btn-start-first-spark').click();
-          await page.waitForFunction(()=>document.querySelector('#first-spark')?.getAttribute('data-spark-state') === 'active');
-          await page.evaluate(()=>{ history.replaceState(null,'',location.pathname); dispatchEvent(new PopStateEvent('popstate')); });
-          check(`${label}: history closes experiment`,await card.getAttribute('data-spark-state') === 'idle');
+          check(label+': stage rendered by server',await page.locator('[data-inline-spark] .hand-art').count()===2);
+          check(label+': no startup button',await page.locator('.btn-start-first-spark').count()===0);
+          await page.waitForFunction(()=>document.querySelector('[data-inline-spark]')?.dataset.sparkState==='ready');
+          check(label+': no initial scroll hijack',await page.evaluate(()=>scrollY<5));
+          const intro=page.locator('[data-inline-spark]');
+          const timing=await intro.evaluate(e=>({start:Number(e.dataset.scrollStart),end:Number(e.dataset.scrollEnd)}));
+          await page.evaluate(t=>scrollTo({top:t.start+(t.end-t.start)*.72,behavior:'instant'}),timing);await page.waitForTimeout(300);
+          check(label+': timeline follows scroll',Math.abs(Number(await intro.getAttribute('data-progress'))-.72)<.02);
+          await screenshot(page,'first-spark-'+viewport.width);
+          await intro.locator('.skip-intro').click();await page.waitForTimeout(500);
+          check(label+': skip preserves stage',await intro.count()===1);
+          await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>document.querySelector('[data-inline-spark]')?.dataset.artState==='static-reduced');
+          check(label+': reduced static hands',await intro.getAttribute('data-art-state')==='static-reduced');
         }
         const loaded = await page.locator('img').evaluateAll(async images => {
           return Promise.all(images.map(async img => {img.loading='eager';try{await img.decode();return {src:img.getAttribute('src'),ok:img.naturalWidth>0};}catch{return {src:img.getAttribute('src'),ok:false};}}));
