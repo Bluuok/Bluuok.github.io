@@ -49,7 +49,7 @@ try{
   for(const p of [.45,.58,.72,.86,.98,.2]){
    const target=bounds.start+(bounds.end-bounds.start)*p;
    for(let n=0;n<30;n++){const y=await page.evaluate(()=>scrollY);if(Math.abs(target-y)<3)break;const delta=Math.max(-200,Math.min(200,target-y));await page.mouse.wheel(0,delta);await page.waitForFunction(y=>Math.abs(scrollY-y)<4,y+delta);}
-   await page.waitForTimeout(100);const result=await sample();check('spark wheel '+width+' '+p,Math.abs(result.progress-p)<.015,result);
+   await page.waitForFunction(p=>Math.abs(Number(document.querySelector('[data-inline-spark]')?.getAttribute('data-progress'))-p)<.001,p,{timeout:5000});const result=await sample();check('spark wheel '+width+' '+p,Math.abs(result.progress-p)<.015,result);
    if(p===.58)check('fingertips meet '+width,result.gap<2,result);
    await page.screenshot({path:dir+'/spark-'+width+'-'+p+'.png'});
   }

@@ -105,7 +105,7 @@ try {
           check(label+': no initial scroll hijack',await page.evaluate(()=>scrollY<5));
           const intro=page.locator('[data-inline-spark]');
           const timing=await intro.evaluate(e=>({start:Number(e.dataset.scrollStart),end:Number(e.dataset.scrollEnd)}));
-          await page.evaluate(t=>scrollTo({top:t.start+(t.end-t.start)*.72,behavior:'instant'}),timing);await page.waitForTimeout(300);
+          await page.evaluate(t=>scrollTo({top:t.start+(t.end-t.start)*.72,behavior:'instant'}),timing);await page.waitForFunction(()=>Math.abs(Number(document.querySelector('[data-inline-spark]')?.getAttribute('data-progress'))-.72)<.001,null,{timeout:5000});
           check(label+': timeline follows scroll',Math.abs(Number(await intro.getAttribute('data-progress'))-.72)<.02);
           await screenshot(page,'first-spark-'+viewport.width);
           await intro.locator('.skip-intro').click();await page.waitForTimeout(500);
