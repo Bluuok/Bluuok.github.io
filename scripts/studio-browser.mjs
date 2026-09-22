@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { startStaticPreview } from './static-preview.mjs';
 import assert from 'node:assert/strict';
+import { coreProjects } from '../src/data/projects.ts';
 
 const output = 'review-output';
 await mkdir(`${output}/screenshots`, { recursive: true });
@@ -130,7 +131,8 @@ try {
     const page = await context.newPage(); await page.goto(`${base}${path}`,{waitUntil:'networkidle'});
     check(`${name}: no-JS heading`,await page.locator('h1').isVisible());
     check(`${name}: no-JS links`,await page.locator('a[href]').count()>2);
-    if(name==='clawtide'||name==='threadcove')check(`${name}: no-JS evidence`,await page.locator('[data-evidence] figure:visible').count()===2);
+    const project = coreProjects.find(project => project.id === name);
+    if(project)check(`${name}: no-JS evidence`,await page.locator('[data-evidence] figure:visible').count()===project.media.length);
     await context.close();
   }
 } finally {
