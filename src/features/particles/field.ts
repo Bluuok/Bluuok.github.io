@@ -1,3 +1,4 @@
+import {pointerSamples} from './pointer-input';
 import {PointerTrail,advanceDust} from './home-flow';
 import {sceneReadiness} from '../../lib/scene-readiness';
 import { sparkStory, sparkParticles, sparkPosition } from '../first-spark/story';
@@ -41,6 +42,9 @@ export function mountParticleField(
   const random=()=>{if(!narrative)return Math.random();seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   const between=(min:number,max:number)=>min+random()*(max-min);
   const renderer = config.enabled ? createParticleRenderer(canvas, config.colors, config.bloomScale) : null;
+  const probeEnabled=new URLSearchParams(location.search).has('scenePerf');
+  const inputFrames:object[]=[];let trustedInputs=0,syntheticInputs=0;
+  const speedStats=()=>{const speeds=particles.map(p=>Math.hypot(p.vx,p.vy)).sort((a,b)=>a-b);return {p50:speeds[Math.floor(speeds.length*.5)]??0,p95:speeds[Math.floor(speeds.length*.95)]??0,max:speeds.at(-1)??0};};
   const perf=sceneReadiness(narrative?'spark-particles':'home-particles');perf.mark('request');const trail=new PointerTrail();let hasPainted=false;let renderCount=0;
   let cleaned = false;
   let sceneProgress = 0;
@@ -203,7 +207,9 @@ export function mountParticleField(
     if(narrative){updateNarrative();render(time);return;}
     const seconds=Math.min(.05,Math.max(0,(time-lastTime)/1000));
     if(pointerConfig.mode!=='shape'){
+      const before=probeEnabled?speedStats():null;
       const segments=trail.consume(time);for(let i=0;i<particles.length;i++){const p=particles[i];p.narrativeAlpha=advanceDust(p,seconds,time/1000,width,height,segments);p.streak=i%29===0&&Math.hypot(p.vx,p.vy)>65;}
+      if(probeEnabled){inputFrames.push({time,dt:seconds,segments:segments.map(s=>({span:s.b.t-s.a.t,length:Math.hypot(s.b.x-s.a.x,s.b.y-s.a.y),age:time-s.b.t})),trail:{...trail.diagnostics},before,after:speedStats()});if(inputFrames.length>120)inputFrames.shift();}
       lastTime=time;render(time);return;
     }
     const delta = Math.min(2, (time - lastTime) / 16.667);
@@ -302,8 +308,8 @@ export function mountParticleField(
       return;
     }
     pointer = { x, y, type: event.pointerType };
-    const samples=event.getCoalescedEvents?.()??[];
-    for(const sample of samples.length?samples:[event])trail.add({x:sample.clientX-bounds.left,y:sample.clientY-bounds.top,t:sample.timeStamp});
+    if(probeEnabled){if(event.isTrusted)trustedInputs++;else syntheticInputs++;}
+    for(const sample of pointerSamples(event,bounds,performance.now()))trail.add(sample);
     if (event.pointerType === 'touch') touchActiveUntil = performance.now() + 1600;
     host.dataset.pointerActive = 'true';
   };
@@ -358,7 +364,7 @@ export function mountParticleField(
   window.addEventListener('pageshow', handlePageShow);
   host.dataset.pointerActive = 'false';
   host.dataset.shapeActive = 'false';
-  if(new URLSearchParams(location.search).has('scenePerf'))(host as any).particleSnapshot=()=>({progress:sceneProgress,renderCount,particles:particles.map((p,i)=>({id:i,x:p.x,y:p.y,vx:p.vx,vy:p.vy,alpha:p.alpha,homeX:p.homeX,homeY:p.homeY}))});
+  if(probeEnabled)(host as any).particleSnapshot=()=>({progress:sceneProgress,renderCount,input:{trustedInputs,syntheticInputs,frames:inputFrames},particles:particles.map((p,i)=>({id:i,x:p.x,y:p.y,vx:p.vx,vy:p.vy,alpha:p.alpha,homeX:p.homeX,homeY:p.homeY}))});
   resize();
   syncAnimation();
 

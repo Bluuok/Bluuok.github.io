@@ -1,8 +1,8 @@
 ---
-import type {Project} from '../data/projects';
+import type {CoreProject} from '../data/projects';
 import ProjectArt from './ProjectArt.astro';
 import {url} from '../lib/urls';
-interface Props {project:Project}
+interface Props {project:CoreProject}
 const {project}=Astro.props;
 const href=url(`projects/${project.id}/`),media=project.media[0];
 ---

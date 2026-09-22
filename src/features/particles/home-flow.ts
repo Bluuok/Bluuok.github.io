@@ -4,9 +4,10 @@ export interface FlowSample{x:number;y:number;t:number}
 export interface FlowSegment{a:FlowSample;b:FlowSample}
 export const homeFlowConfig={radius:160,halfLife:.42,maxSpeed:260,backgroundSpeed:14,maxSamples:64};
 export class PointerTrail{
+ readonly diagnostics={received:0,dropped:0,consumed:0};
  private samples:FlowSample[]=[];private previous:FlowSample|null=null;
- add(sample:FlowSample){if(this.previous&&sample.t<this.previous.t)return;this.samples.push(sample);if(this.samples.length>homeFlowConfig.maxSamples)this.samples.shift();}
- consume(now:number){const segments:FlowSegment[]=[];for(const sample of this.samples){if(now-sample.t>250){this.previous=null;continue;}if(this.previous&&sample.t-this.previous.t<180&&Math.hypot(sample.x-this.previous.x,sample.y-this.previous.y)>.1)segments.push({a:this.previous,b:sample});this.previous=sample;}this.samples.length=0;return segments;}
+ add(sample:FlowSample){if(this.previous&&sample.t<this.previous.t)return;this.diagnostics.received++;this.samples.push(sample);if(this.samples.length>homeFlowConfig.maxSamples)this.samples.shift();}
+ consume(now:number){const segments:FlowSegment[]=[];for(const sample of this.samples){if(now-sample.t>250){this.diagnostics.dropped++;this.previous=null;continue;}this.diagnostics.consumed++;if(this.previous&&sample.t-this.previous.t<180&&Math.hypot(sample.x-this.previous.x,sample.y-this.previous.y)>.1)segments.push({a:this.previous,b:sample});this.previous=sample;}this.samples.length=0;return segments;}
  clear(){this.samples.length=0;this.previous=null;}
 }
 export function advanceDust(p:FlowParticle,dt:number,time:number,width:number,height:number,segments:readonly FlowSegment[]){

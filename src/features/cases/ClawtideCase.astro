@@ -1,11 +1,11 @@
 ---
 import TypeLine from '../../components/TypeLine.astro';
-import type {Project} from '../../data/projects';
+import type {CoreProject} from '../../data/projects';
 import CaseEvidence from '../../components/CaseEvidence.astro';
 import CaseClosing from '../../components/CaseClosing.astro';
 import TidalSculpture from './TidalSculpture.astro';
 import './cases.css';
-interface Props {project:Project}
+interface Props {project:CoreProject}
 const {project}=Astro.props;
 ---
 <article class="studio-case claw-case container" id="overview">

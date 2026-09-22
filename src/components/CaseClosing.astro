@@ -1,12 +1,12 @@
 ---
-import type { Project } from '../data/projects';
-import { projects } from '../data/projects';
+import type { CoreProject } from '../data/projects';
+import { coreProjects, selectedProjects } from '../data/projects';
 import { features } from '../config/features';
 import { url } from '../lib/urls';
-interface Props { project: Project }
+interface Props { project: CoreProject }
 const { project } = Astro.props;
-const next = projects.find(p => p.id !== project.id);
-const returnHref = url(features.sections.includes('projects') ? '#projects' : '');
+const next = coreProjects.find(p => p.id !== project.id);
+const returnHref = url(features.sections.includes('projects') && selectedProjects.length > 0 ? '#projects' : '');
 ---
 <section class="case-section case-boundaries" id="boundaries">
   <p class="eyebrow">SCOPE & SOURCE</p><h2>作品，也有明确的边界。</h2>

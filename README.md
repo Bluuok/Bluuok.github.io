@@ -7,9 +7,9 @@
 | `/` | 细粒光尘、可交互三维布料、精选项目与个人介绍 |
 | `/projects/clawtide/` | 陶瓷刻槽装置、任务入口与工程取舍 |
 | `/projects/threadcove/` | 纸面研究台、研究任务与后端接口 |
-| `/playground/` | 小作品与实验；点击后进入 First Spark 双手滚动体验 |
+| `/playground/` | 小作品与实验；直接滚动体验 First Spark 双手分镜 |
 
-First Spark 使用 `/playground/#first-spark`，不增加第五个路由。默认页面不加载手部图像或 GSAP 时间轴。
+First Spark 使用 `/playground/#first-spark`，不增加第五个路由。纸手直接输出到页面，图片解码后建立滚动时间轴；无需点击开始。
 
 ## 本地运行
 
@@ -34,7 +34,7 @@ npm run preview
 | --- | --- |
 | 作者信息、首页文案与联系方式 | `src/data/site.ts` |
 | 项目事实、媒体类型与源码证据 | `src/data/projects.ts` |
-| 实验目录 | `src/data/experiments.ts` |
+| 实验目录 | `src/data/small-projects.ts` |
 | 独立功能开关、首页区块顺序 | `src/config/features.ts` |
 | 色彩、字体、留白 | `src/styles/tokens.css` |
 | 粒子外观与鼠标作用范围 | `src/features/particles/config.ts`、`interaction.ts` |
@@ -50,3 +50,11 @@ npm run preview
 ## 构建与部署
 
 构建结果位于 `dist/`。部署到子目录时配置 `astro.config.mjs` 的 `base`，站内 URL 使用统一 helper。合并或部署前请检查当前 PR 的截图和验证记录；本地浏览器结果不等同于真实移动设备或现场 CWV。
+
+## 核心案例与小作品
+
+`src/data/projects.ts` 的 `coreProjects` 仅用于 Clawtide / ThreadCove 专属案例；`featured: true` 显式决定首页精选。Footer 与专属详情路由只消费核心案例。每个核心案例自己的媒体、commit 和日期可独立更新。
+
+其他作品添加到 `src/data/small-projects.ts`，填写 `kind: small`、id、标题、摘要、介绍、标签、状态和源码链接；可选封面、媒体、演示链接与日期。Playground 自动生成卡片及原生 details 展开，不需要新建 Case 页面，也不会进入首页精选或 Footer。媒体复用 commit/dataMode/尺寸/图注；录像使用 controls，不自动播放。没有素材或演示地址就省略，不填假链接。
+
+后续生产目标为用户服务器，部署 `dist/` 静态文件。GitHub 仅用于源码和 CI；不为 GitHub Pages 调整效果或部署设置。真实服务器域名尚未提供，上线后再检查四条路由、资源路径、移动端与 WebGL 首次加载。

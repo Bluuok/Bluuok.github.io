@@ -36,6 +36,8 @@ jobs:
           node scripts/review-regression.mjs
       - name: Particle and lifecycle browser regression
         run: node scripts/review-browser.mjs
+      - name: Project catalog isolation
+        run: node scripts/project-catalog-test.mjs
       - name: Studio browser verification
         run: node scripts/studio-browser.mjs
       - name: Material and interaction verification

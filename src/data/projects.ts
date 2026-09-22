@@ -2,7 +2,8 @@ export interface ProjectMedia {
   kind:'concept'|'screenshot'|'recording'; src:string; alt:string; caption:string;
   commit:string; width:number; height:number; dataMode:'fixture'|'live'|'artwork';
 }
-export interface Project {
+export interface CoreProject {
+  kind: 'case'; featured: boolean;
   id:string;name:string;index:string;cover:'orbit'|'ribbon';category:string;
   summary:string;description:string;tags:string[];sourceUrl:string;demoUrl?:string;
   image?:string;imageAlt?:string;caseKind:'clawtide'|'threadcove';verifiedCommit:string;verifiedDate:string;
@@ -13,8 +14,8 @@ export interface Project {
 const clawCommit='e2f091b83df806e7b19e3de69edca0baf0b3a6d8';
 const threadCommit='cd9462a9b52dad708b6f3a03edbdef57c2952553';
 const reference=(repo:string,commit:string)=>`https://github.com/Bluuok/${repo}/blob/${commit}/README.md`;
-export const projects:Project[]=[{
-  id:'clawtide',name:'Clawtide',index:'01',cover:'orbit',category:'SELECTED WORK / 01',caseKind:'clawtide',
+export const coreProjects:CoreProject[]=[{
+  kind:'case',featured:true,id:'clawtide',name:'Clawtide',index:'01',cover:'orbit',category:'SELECTED WORK / 01',caseKind:'clawtide',
   summary:'让数字员工，在自己的工作区里持续工作。',
   description:'一个自托管、多用户的 AI 数字员工平台。Web、即时消息与定时任务连接同一运行时，身份与工作区边界分别管理。',
   tags:['自托管','工作区与权限','主动 / 被动触发'],sourceUrl:'https://github.com/Bluuok/Clawtide',verifiedCommit:clawCommit,verifiedDate:'2026-09-16',
@@ -31,7 +32,7 @@ export const projects:Project[]=[{
     {title:'发生项与通知，分开处理',summary:'任务执行状态与通知重试状态分开。',detail:'SQLite 单写者基础上的条件更新决定发生项领取；过期租约区分未开始与已开始的运行。',sourceRef:'R14 任务生命周期',sourceUrl:reference('Clawtide',clawCommit)},
     {title:'能力边界写在明处',summary:'Telegram、飞书与其他骨架适配器明确区分。',detail:'模型执行仍需要部署者提供有效配置。测试替身、连接测试和真实模型执行不作为同一种证据。',sourceRef:'渠道状态与运行要求',sourceUrl:reference('Clawtide',clawCommit)}]
 },{
-  id:'threadcove',name:'ThreadCove',index:'02',cover:'ribbon',category:'SELECTED WORK / 02',caseKind:'threadcove',
+  kind:'case',featured:true,id:'threadcove',name:'ThreadCove',index:'02',cover:'ribbon',category:'SELECTED WORK / 02',caseKind:'threadcove',
   summary:'把零散的线索，整理成可以继续的研究。',description:'面向个人深度研究的信息分析工作台。独立任务、Agent 后端与统一事件流，在 Electron 与 Web 之间延续同一套工作方式。',
   tags:['个人研究','任务隔离','统一事件流'],sourceUrl:'https://github.com/Bluuok/ThreadCove',verifiedCommit:threadCommit,verifiedDate:'2026-09-16',
   media:[
@@ -47,3 +48,6 @@ export const projects:Project[]=[{
     {title:'统一词表，而非统一能力',summary:'AgentEvent 让客户端读取同一种事件结构。',detail:'后端支持的能力依旧可能不同；事件适配不能把这些差异隐藏成能力相同。',sourceRef:'AgentBackend / EventQueue',sourceUrl:reference('ThreadCove',threadCommit)},
     {title:'共享传输，保留本地边界',summary:'Electron 与 Web 复用协议，同时分类 LOCAL_ONLY 与 REMOTE_ELIGIBLE。',detail:'个人研究工具，不宣称企业级多用户治理、监控或容灾。',sourceRef:'通道分类与项目范围',sourceUrl:reference('ThreadCove',threadCommit)}]
 }];
+
+/** Only explicitly selected core cases appear on the home page. */
+export const selectedProjects=coreProjects.filter(project=>project.featured);

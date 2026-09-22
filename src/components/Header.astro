@@ -2,9 +2,9 @@
 import { site } from '../data/site';
 import { url } from '../lib/urls';
 import { features } from '../config/features';
-import { projects } from '../data/projects';
+import { selectedProjects } from '../data/projects';
 
-const hasProjects = features.sections.includes('projects') && projects.length > 0;
+const hasProjects = features.sections.includes('projects') && selectedProjects.length > 0;
 const hasAbout = features.sections.includes('about');
 
 const projectsLink = hasProjects ? url('#projects') : url('');

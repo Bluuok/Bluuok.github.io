@@ -1,8 +1,8 @@
 import {createServer} from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
-export async function startStaticPreview(){
- const root=resolve('dist');
+export async function startStaticPreview(directory='dist'){
+ const root=resolve(directory);
  const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2','.json':'application/json'};
  const server=createServer(async(req,res)=>{try{
   let file=resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));

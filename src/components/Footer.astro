@@ -1,13 +1,13 @@
 ---
 import { site } from '../data/site';
 import { url } from '../lib/urls';
-import { projects } from '../data/projects';
+import { coreProjects } from '../data/projects';
 ---
 <footer class="site-footer">
   <div class="container footer-inner">
     <nav class="footer-nav" aria-label="站点地图">
       <a href={url('')}>首页</a>
-      {projects.map((p) => (
+      {coreProjects.map((p) => (
         <a href={url(`projects/${p.id}/`)}>{p.name}</a>
       ))}
       <a href={url('playground/')}>Playground</a>

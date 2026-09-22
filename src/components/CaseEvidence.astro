@@ -1,7 +1,7 @@
 ---
-import type { Project } from '../data/projects';
+import type { CoreProject } from '../data/projects';
 import { url } from '../lib/urls';
-interface Props { project: Project }
+interface Props { project: CoreProject }
 const { project } = Astro.props;
 ---
 <section class="case-section evidence-section" id="interface" aria-labelledby="interface-title" data-evidence>

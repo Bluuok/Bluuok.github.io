@@ -1,8 +1,8 @@
 ---
-import { projects } from '../data/projects';
+import { selectedProjects } from '../data/projects';
 import ProjectCard from '../components/ProjectCard.astro';
 ---
-{projects.length > 0 && <section id="projects" class="section container" aria-labelledby="projects-title">
+{selectedProjects.length > 0 && <section id="projects" class="section container" aria-labelledby="projects-title">
   <div class="section-heading">
     <div>
       <p class="eyebrow">01 / SELECTED WORK</p>
@@ -14,7 +14,7 @@ import ProjectCard from '../components/ProjectCard.astro';
     </p>
   </div>
   <div class="projects-grid">
-    {projects.map((project) => (
+    {selectedProjects.map((project) => (
       <ProjectCard project={project} />
     ))}
   </div>

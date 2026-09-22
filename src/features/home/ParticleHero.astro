@@ -4,8 +4,8 @@ import ParticleField from '../particles/ParticleField.astro';
 import { site } from '../../data/site';
 import { url } from '../../lib/urls';
 import { features } from '../../config/features';
-import { projects } from '../../data/projects';
-const hasProjects=features.sections.includes('projects')&&projects.length>0;
+import { selectedProjects } from '../../data/projects';
+const hasProjects=features.sections.includes('projects')&&selectedProjects.length>0;
 const destination=hasProjects?url('#projects'):url('playground/');
 ---
 <section class="particle-hero studio-hero" aria-labelledby="hero-title">

@@ -25,3 +25,11 @@ const reference=replay(120),fps=[30,60,120,144].map(hz=>{const got=replay(hz);co
 const particles=seed(),original=seed();let peak=0;for(let f=0;f<1800;f++){const t=f/60,previous={x:200+900*(.5+.5*Math.sin((t-1/60)*2)),y:450+150*Math.sin((t-1/60)*3),t:(t-1/60)*1000},next={x:200+900*(.5+.5*Math.sin(t*2)),y:450+150*Math.sin(t*3),t:t*1000};for(const p of particles){advanceDust(p,1/60,t,1440,1000,[{a:previous,b:next}]);peak=Math.max(peak,Math.hypot(p.vx,p.vy));assert.ok(Number.isFinite(p.x)&&p.x>=-65&&p.x<=1505&&p.y>=-65&&p.y<=1065);}}
 const inside=particles.filter(p=>p.x>0&&p.x<1440&&p.y>0&&p.y<1000).length;assert.ok(inside>particles.length*.75,'repeated motion retains visible density');
 const report={fps,peak,inside,total:particles.length,meanThirtySecondDisplacement:particles.reduce((s,p,i)=>s+Math.hypot(p.x-original[i].x,p.y-original[i].y),0)/particles.length};await mkdir('review-output/review-5263461859',{recursive:true});await writeFile('review-output/review-5263461859/regression.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+
+const {pointerSamples}=await loadTs('src/features/particles/pointer-input.ts');
+const coalesced=[{clientX:10,clientY:20,timeStamp:1700000000000},{clientX:40,clientY:30,timeStamp:1700000000010}];
+const adapted=pointerSamples({...coalesced[1],getCoalescedEvents:()=>coalesced},{left:5,top:10},100);
+assert.deepEqual(adapted,[{x:5,y:10,t:90},{x:35,y:20,t:100}]);
+const clockTrail=new PointerTrail();adapted.forEach(s=>clockTrail.add(s));assert.equal(clockTrail.consume(116).length,1);
+adapted.forEach(s=>clockTrail.add(s));assert.equal(clockTrail.consume(500).length,0);assert.ok(clockTrail.diagnostics.dropped>0);
+console.log('Coalesced pointer clock mapping and stale-sample rejection passed.');
