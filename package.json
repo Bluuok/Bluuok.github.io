@@ -7,14 +7,18 @@
     "dev": "astro dev --host 127.0.0.1 --port 4321",
     "build": "astro build",
     "preview": "astro preview --host 127.0.0.1 --port 4321",
-    "check": "astro check"
+    "check": "astro check",
+    "prebuild": "node scripts/bake-cloth-rest.mjs",
+    "predev": "node scripts/bake-cloth-rest.mjs"
   },
   "dependencies": {
     "astro": "7.3.2",
-    "gsap": "^3.13.0"
+    "gsap": "^3.13.0",
+    "three": "^0.186.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@types/three": "^0.186.0",
     "typescript": "^5.9.2"
   }
 }

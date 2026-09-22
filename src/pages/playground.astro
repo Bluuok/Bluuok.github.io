@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import FirstSparkSection from '../features/first-spark/FirstSparkSection.astro';
+import TypeLine from '../components/TypeLine.astro';
+import {smallProjects} from '../data/small-projects';
+import SmallProjectCard from '../components/SmallProjectCard.astro';
+import {features} from '../config/features';
+import {url} from '../lib/urls';
+const stage=smallProjects.find(project=>project.stage==='first-spark');
+const others=smallProjects.filter(project=>!project.stage);
+---
+<Layout title="小作品与实验 — Bluuok" description="纸手、光尘与独立交互实验。随滚动，让两个指尖相遇。">
+ <div id="top"></div><Header/>
+ <main id="main" tabindex="-1">
+  <header class="container experiment-heading"><p class="eyebrow">OPEN EXPERIMENTS / BLUUOK</p><h1>小作品与实验。</h1><p><TypeLine text="两个指尖，一次相遇。"/></p><a class="text-link" href="#other-experiments">跳到其他作品 ↓</a></header>
+  {features.firstSpark&&stage&&<FirstSparkSection/>}
+  <section id="other-experiments" class="container experiment-list" tabindex="-1" aria-label="其他小作品">
+   <div class="small-project-grid">{others.map(project=><SmallProjectCard project={project}/>)}</div>
+   <p class="gallery-footnote">{others.length?'每件作品，都是一次独立的尝试。':'更多小作品，将在完成后收录。'}</p><a class="text-link" href={url('')}>返回首页 ↗</a>
+  </section>
+ </main><Footer/>
+</Layout>
+<style>.experiment-heading{padding-block:38px 20px}.experiment-heading h1{font-size:clamp(30px,4vw,48px);font-weight:450;letter-spacing:-.05em;margin:12px 0}.experiment-heading>p{color:var(--muted);margin-bottom:10px}.experiment-heading>a{font-size:12px}.experiment-list{padding-block:55px 90px;scroll-margin-top:100px}.experiment-list .gallery-footnote{margin:0 0 22px}.small-project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-bottom:28px}@media(max-width:680px){.small-project-grid{grid-template-columns:1fr}}</style>

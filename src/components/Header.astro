@@ -1,13 +1,66 @@
 ---
 import { site } from '../data/site';
+import { url } from '../lib/urls';
 import { features } from '../config/features';
-const labels = { projects: '作品', about: '关于', contact: '联系' };
+import { selectedProjects } from '../data/projects';
+
+const hasProjects = features.sections.includes('projects') && selectedProjects.length > 0;
+const hasAbout = features.sections.includes('about');
+
+const projectsLink = hasProjects ? url('#projects') : url('');
+const aboutLink = hasAbout ? url('#about') : url('');
 ---
 <a class="skip-link" href="#main">跳到正文</a>
 <header class="site-header">
-  <a class="wordmark" href="#top" aria-label={`${site.name} 首页`}><span class="brand-symbol" aria-hidden="true">✳</span>{site.name}<span class="wordmark-dot">.</span></a>
-  <nav aria-label="主导航">
-    {features.sections.map(id => <a href={`#${id}`}>{labels[id]}</a>)}
-  </nav>
-  <a class="header-link" href={site.github} target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+  <div class="container">
+    <a class="brand-link" href={url('')} aria-label={`${site.name} 首页`}>
+      <span class="brand-symbol" aria-hidden="true">✳</span>
+      <span>{site.name}</span>
+      <span class="brand-dot">.</span>
+    </a>
+    <div class="nav-group">
+      <nav aria-label="主导航" class="site-nav">
+        {hasProjects && <a href={projectsLink}>精选作品</a>}
+        <a href={url('playground/')}>小作品与实验</a>
+        {hasAbout && <a href={aboutLink}>关于</a>}
+      </nav>
+      <div class="header-actions">
+        <button class="btn-motion-toggle" type="button" aria-pressed="true" aria-label="切换全局动态效果">
+          <span class="motion-icon" aria-hidden="true">✦</span>
+          <span class="motion-text">动效: 开启</span>
+        </button>
+        <a class="header-link" href={site.github} target="_blank" rel="noopener noreferrer">
+          GitHub <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
 </header>
+
+<script>
+  import { subscribeMotion, setUserReduced, type MotionState } from '../lib/motion';
+
+  const toggleBtn = document.querySelector<HTMLButtonElement>('.btn-motion-toggle');
+
+  if (toggleBtn) {
+    subscribeMotion((state: MotionState) => {
+      const isReduced = state.isReduced;
+      toggleBtn.classList.toggle('reduced', isReduced);
+      toggleBtn.setAttribute('aria-pressed', String(!isReduced));
+
+      const textSpan = toggleBtn.querySelector('.motion-text');
+      if (textSpan) {
+        if (state.systemReduced) {
+          textSpan.textContent = '动效: 系统关闭';
+        } else {
+          textSpan.textContent = isReduced ? '动效: 已关闭' : '动效: 开启';
+        }
+      }
+    });
+
+    toggleBtn.addEventListener('click', () => {
+      const current = document.body.classList.contains('reduced-motion');
+      setUserReduced(!current);
+    });
+  }
+</script>

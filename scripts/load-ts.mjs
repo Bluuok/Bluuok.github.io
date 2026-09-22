@@ -1,0 +1,3 @@
+import {readFile} from 'node:fs/promises';import {resolve,dirname,extname} from 'node:path';import ts from 'typescript';const cache=new Map();
+export async function loadTs(path){return import(await moduleUrl(resolve(path)));}
+async function moduleUrl(path){if(cache.has(path))return cache.get(path);let code=ts.transpileModule(await readFile(path,'utf8'),{compilerOptions:{target:99,module:99}}).outputText;for(const match of [...code.matchAll(/from ['"](\.[^'"]+)['"]/g)]){let child=resolve(dirname(path),match[1]);if(!extname(child))child+='.ts';code=code.replace(match[0],'from '+JSON.stringify(await moduleUrl(child)));}const url='data:text/javascript;base64,'+Buffer.from(code).toString('base64');cache.set(path,url);return url;}

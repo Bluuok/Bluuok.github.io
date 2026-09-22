@@ -1,0 +1,8 @@
+---
+import {url} from '../../lib/urls';
+import {smallProjects} from '../../data/small-projects';
+import {features} from '../../config/features';
+const items=smallProjects.filter(project=>!project.stage||features.firstSpark);
+const preview=items.find(project=>project.cover);
+---
+{items.length>0&&<section class="container studio-preview" aria-labelledby="studio-preview-title"><div><p class="eyebrow">SMALL WORKS / OPEN EXPERIMENTS</p><h2 id="studio-preview-title">另一些好奇，<br/>不必长成产品。</h2><p>独立的小作品与视觉实验，<br/>留在可以自由探索的地方。</p><a class="text-link" href={url('playground/')}>浏览 {items.length} 件小作品与实验 ↗</a></div>{preview?.cover&&<a class="studio-preview-art" href={url('playground/#'+preview.id)} aria-label={'查看 '+preview.title}><img src={url(preview.cover.src)} alt={preview.cover.alt} width={preview.cover.width} height={preview.cover.height} loading="lazy"/><span>{preview.title} <span aria-hidden="true">↗</span></span></a>}</section>}

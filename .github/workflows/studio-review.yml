@@ -1,0 +1,56 @@
+name: Studio review
+on:
+  push:
+    branches: [codex/studio-completion-review]
+  pull_request:
+    paths: ['src/**', 'public/**', 'package*.json', 'astro.config.mjs', 'scripts/**', '.github/workflows/studio-review.yml']
+permissions:
+  contents: read
+concurrency:
+  group: studio-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - name: Install isolated browser tooling
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Physics and particle regression
+        run: |
+          node scripts/particle-input-test.mjs
+          node scripts/cloth-physics-test.mjs
+          node scripts/spark-path-test.mjs
+          node scripts/review-regression.mjs
+      - name: Particle and lifecycle browser regression
+        run: node scripts/review-browser.mjs
+      - name: Project catalog isolation
+        run: node scripts/project-catalog-test.mjs
+      - name: Studio browser verification
+        run: node scripts/studio-browser.mjs
+      - name: Material and interaction verification
+        run: node scripts/polish-browser.mjs
+      - name: Prepare review snapshot
+        if: always()
+        run: |
+          mkdir -p review-output
+          tar -czf review-output/source.tar.gz src public scripts package.json package-lock.json astro.config.mjs tsconfig.json AGENTS.md
+          if [ -d dist ]; then tar -czf review-output/preview.tar.gz dist; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-review-${{ github.sha }}
+          path: review-output/
+          retention-days: 7

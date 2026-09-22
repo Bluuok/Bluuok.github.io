@@ -6,6 +6,6 @@ export const site = {
   headline: ['每个创造，', '始于一次触碰。'],
   intro: '你好，我是 Bluuok。欢迎来到我的一小片数字空间。',
   github: 'https://github.com/Bluuok',
-  email: '', // Fill this in to enable the email link.
+  email: '', // Fill this in when ready.
   about: '喜欢让一个模糊的念头，慢慢长成可以体验的作品。这里会收集我的项目、实验，以及沿途的思考。',
 };

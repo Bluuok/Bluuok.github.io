@@ -1,0 +1,30 @@
+---
+import { tidalEntries as entries } from '../../data/studio-art';
+const top = 'M80 195 C180 178 180 65 300 92 C412 113 407 202 550 183';
+---
+<section class="tidal-installation" data-tidal data-render-state="poster" aria-label="三条入口的陶瓷潮汐概念装置">
+  <div class="tidal-viewport">
+    <canvas aria-hidden="true"></canvas>
+    <svg class="tidal-poster" viewBox="0 0 640 450" aria-hidden="true">
+      <defs>
+        <linearGradient id="tidalIvory" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#ffffff"/><stop offset=".6" stop-color="#e5edf4"/><stop offset="1" stop-color="#829fb9"/></linearGradient>
+        <linearGradient id="tidalForest" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#ffffff"/><stop offset=".6" stop-color="#f0f6f3"/><stop offset="1" stop-color="#c5ded4"/></linearGradient>
+        <linearGradient id="tidalTeal" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#ffffff"/><stop offset=".6" stop-color="#efeaf5"/><stop offset="1" stop-color="#b3a3c7"/></linearGradient>
+      </defs>
+      {[0,1,2].map(i => <g transform={`translate(${i*12} ${i*44})`}><path d={`${top} L550 216 C414 240 380 152 304 127 C194 90 218 222 80 238Z`} fill={['url(#tidalIvory)','url(#tidalForest)','url(#tidalTeal)'][i]} stroke="#d8dde8" stroke-width=".7"/><path d={top} fill="none" stroke="#fff" stroke-width="2.5"/><path d={top} fill="none" stroke={entries[i].accent} stroke-width="1" stroke-dasharray="8 12" opacity=".7"/></g>)}
+    </svg>
+  </div>
+  <p class="tidal-purpose">主动操作、消息、时间 → 对应工作上下文</p><div class="tidal-controls"><span>轻点选入口 · 按住拖转</span><button type="button" data-touch-view aria-pressed="false">三维查看</button><button type="button" data-reset-view>复位视角</button></div>
+  <div class="installation-caption"><span>STUDY / TIDAL ORDER</span><span>概念装置 · 非实时状态</span></div>
+  <div class="tidal-tabs" role="tablist" aria-label="查看入口说明">
+    {entries.map((e,i) => <button role="tab" type="button" id={`tidal-tab-${i}`} aria-controls={`tidal-panel-${i}`} aria-selected={i === 0} tabindex={i === 0 ? 0 : -1} style={`--entry-color:${e.accent}`}><span>0{i+1}</span>{e.label}</button>)}
+  </div>
+  {entries.map((e,i) => <div class="tidal-caption" role="tabpanel" id={`tidal-panel-${i}`} aria-labelledby={`tidal-tab-${i}`}><p><strong>{e.purpose}</strong></p><p>{e.detail}</p></div>)}
+</section>
+<script>
+  import { mountTabs } from '../../lib/tabs';
+  import { mountTidal } from './tidal';
+  document.querySelectorAll<HTMLElement>('[data-tidal]').forEach(root => { const tabs=[...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')]; const scene = mountTidal(root,index=>tabs[index]?.click()); mountTabs(root, index => scene.select(index)); });
+</script>
+
+<style>.tidal-purpose{font-size:12px;color:var(--muted);text-align:center}.tidal-tabs [role=tab]{border-bottom-color:var(--entry-color)}.tidal-tabs [role=tab] span{color:var(--entry-color)}.tidal-tabs [aria-selected=true]{box-shadow:inset 0 -2px var(--entry-color)}.tidal-controls{display:flex;gap:16px;align-items:center;justify-content:flex-end;font-size:12px;padding:8px 0;color:var(--muted)}.tidal-controls button{padding:8px 12px;border:1px solid #b8c4d5;background:transparent;border-radius:20px;cursor:pointer}@media(pointer:fine){[data-touch-view]{display:none}}</style>

@@ -1,0 +1,25 @@
+---
+import Hand from '../intro/Hand.astro';
+import { introConfig } from '../intro/config';
+import './first-spark.css';
+const layout=introConfig.desktop,mobile=introConfig.mobile;
+const sceneStyles=[`--spark-scroll:${layout.scrollScreens*100}vh`,`--mobile-spark-scroll:${mobile.scrollScreens*100}vh`,`--contact-x:${layout.contact.x*100}%`,`--contact-y:${layout.contact.y*100}%`,`--left-width:${layout.handWidth.left*100}%`,`--right-width:${layout.handWidth.right*100}%`,`--left-angle:${layout.rotation.left}deg`,`--right-angle:${layout.rotation.right}deg`,`--gap-x:${layout.gap.x*100}cqw`,`--gap-y:${layout.gap.y*100}cqh`,`--mobile-contact-x:${mobile.contact.x*100}%`,`--mobile-contact-y:${mobile.contact.y*100}%`,`--mobile-left-width:${mobile.handWidth.left*100}%`,`--mobile-right-width:${mobile.handWidth.right*100}%`,`--mobile-left-angle:${mobile.rotation.left}deg`,`--mobile-right-angle:${mobile.rotation.right}deg`,`--mobile-gap-x:${mobile.gap.x*100}cqw`,`--mobile-gap-y:${mobile.gap.y*100}cqh`].join(';');
+
+---
+<script is:inline>document.documentElement.classList.add('has-inline-spark');</script>
+<section class="intro first-spark-intro" id="first-spark" data-inline-spark data-intro style={sceneStyles} aria-label="创造亚当：交互体验"><div class="intro-stage" data-stage><div class="particle-field" data-particle-host data-particle-scene="first-spark" aria-hidden="true"><canvas class="particle-field__canvas" aria-hidden="true"></canvas></div><div class="intro-grain" aria-hidden="true"></div><div class="intro-copy" data-opening><p class="eyebrow"><span class="status-dot"></span>01 / FIRST SPARK</p><h2>指尖之间，<br/><span class="iridescent-text">微光初生。</span></h2><p class="intro-description">向下滚动，让纸手与微光相遇。</p></div><div class="scene" data-camera aria-hidden="true"><div class="ambient-light" data-ambient></div><Hand side="left"/><Hand side="right"/><div class="contact-core" data-core></div><div class="light-ring" data-ring></div></div><div class="exposure" data-exposure aria-hidden="true"></div><div class="arrival" data-arrival aria-hidden="true"><p class="eyebrow">THE FIRST SPARK</p><p class="arrival-title">让想法，<br/>成为可以体验的作品。</p><p>这是一件关于触碰的视觉实验。</p></div><div class="intro-bottom"><span class="chapter-label">FIRST SPARK — 滚动分镜</span><a href="#other-experiments" class="scroll-cue"><span class="scroll-line" aria-hidden="true"></span><span data-scroll-label>向下滚动，让灵感相遇</span></a><a class="skip-intro" href="#other-experiments">跳过开场 ↓</a></div></div></section>
+<script>
+ import { mountInlineSpark } from './inline';
+ document.querySelectorAll<HTMLElement>('[data-inline-spark]').forEach(root=>void mountInlineSpark(root));
+</script>
+<style>
+:global(.has-inline-spark:not(.reduced-motion)) .first-spark-intro{height:calc(max(100svh,620px) + var(--spark-scroll));}
+:global(.has-inline-spark:not(.reduced-motion)) .first-spark-intro .intro-stage{position:sticky;top:0;}
+@media(max-width:639px){:global(.has-inline-spark:not(.reduced-motion)) .first-spark-intro{height:calc(max(100svh,620px) + var(--mobile-spark-scroll));}}
+@media(prefers-reduced-motion:reduce){:global(.has-inline-spark) .first-spark-intro{height:auto!important;}.first-spark-intro .hand{transform:none!important;}}
+:global(.reduced-motion) .first-spark-intro .hand{transform:none!important;}
+
+.first-spark-intro .intro-copy{top:9%;}
+.first-spark-intro .intro-copy h2{font-size:clamp(28px,3.8vw,52px);margin-top:14px;}
+.first-spark-intro .intro-stage{min-height:620px;}
+</style>

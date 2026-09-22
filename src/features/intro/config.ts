@@ -1,3 +1,4 @@
+import { sparkStory } from '../first-spark/story';
 export type HandSide = 'left' | 'right';
 
 // Full transparent-image coordinates, not the visible bounding box.
@@ -18,7 +19,8 @@ export interface SceneLayout {
 
 export const introConfig = {
   mobileBreakpoint: 640,
-  scrub: .65,
+  // One short scrub shared by hands, camera and particles smooths discrete wheel steps.
+  scrub: .24,
   desktop: {
     contact: { x: .5, y: .63 },
     handWidth: { left: .65, right: .62 },
@@ -35,14 +37,14 @@ export const introConfig = {
   },
   timing: {
     titleOut: .12, titleDuration: .22,
-    approach: .12, approachDuration: .55,
-    zoom: .4, zoomDuration: .3,
-    contact: .67, glowDuration: .1,
-    exposure: .76, exposureDuration: .16,
-    arrival: .84, arrivalDuration: .16,
+    approach: sparkStory.approach, approachDuration: sparkStory.contact-sparkStory.approach,
+    zoom: .35, zoomDuration: .23,
+    contact: sparkStory.contact, glowDuration: .08,
+    exposure: sparkStory.holdEnd, exposureDuration: sparkStory.fadeEnd-sparkStory.holdEnd,
+    arrival: sparkStory.fadeEnd, arrivalDuration: 1-sparkStory.fadeEnd,
   },
 } satisfies {
-  mobileBreakpoint: number; scrub: number;
+  mobileBreakpoint: number; scrub: boolean | number;
   desktop: SceneLayout; mobile: SceneLayout;
   timing: Record<string, number>;
 };

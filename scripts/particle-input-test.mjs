@@ -1,0 +1,12 @@
+import {readFile} from 'node:fs/promises';
+import ts from 'typescript';import assert from 'node:assert/strict';
+const source=await readFile(new URL('../src/features/particles/interaction.ts',import.meta.url),'utf8');
+const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText;
+const {pointerInfluence,pointerConfig}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+const swept=pointerInfluence(400,80,800,80,{x:0,y:80});
+assert.ok(swept.impulseX>0);assert.ok(swept.pull>0,'fast sweep affects points far from both endpoints');
+const reverse=pointerInfluence(400,80,0,80,{x:800,y:80});assert.ok(reverse.impulseX<0,'reversal changes force immediately');
+const stopped=pointerInfluence(400,80,400,80);assert.equal(stopped.impulseX,0);assert.equal(stopped.impulseY,0);
+const far=pointerInfluence(400,500,800,80,{x:0,y:80});assert.equal(far.pull,0);assert.equal(far.impulseX,0);
+assert.ok(Math.hypot(swept.impulseX,swept.impulseY)<=pointerConfig.maxImpulse);
+console.log('Pointer sweep, reversal, stationary input, locality and impulse bounds passed.');

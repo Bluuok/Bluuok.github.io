@@ -1,0 +1,30 @@
+name: Capture product evidence
+# Explicit maintenance operation. Produces artifacts only; never pushes source.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      - run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - run: node scripts/capture-products.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: product-evidence
+          path: product-evidence/
+          retention-days: 7

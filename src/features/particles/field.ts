@@ -1,12 +1,17 @@
+import {pointerSamples} from './pointer-input';
+import {PointerTrail,advanceDust} from './home-flow';
+import {sceneReadiness} from '../../lib/scene-readiness';
+import { sparkStory, sparkParticles, sparkPosition } from '../first-spark/story';
 import { pointerConfig, pointerInfluence } from './interaction';
 import { resolveParticleFieldConfig, type NormalizedPoint, type ParticleFieldOptions } from './config';
 import { createParticleRenderer, type RenderParticle } from './renderer';
 import { createShapeTargets, type ShapeTarget } from './targets';
+import { subscribeMotion, type MotionState } from '../../lib/motion';
 
 interface Particle extends RenderParticle {
   homeX: number; homeY: number; phase: number;
   orbitAngle: number; orbitRadius: number; twinkle: number; gatherDelay: number;
-  shapeTarget?: ShapeTarget;
+  shapeTarget?: ShapeTarget; narrativeAlpha?:number;
 }
 
 export interface ParticleSceneInput {
@@ -25,15 +30,22 @@ const smooth = (value: number) => {
   const t = clamp01(value);
   return t * t * (3 - 2 * t);
 };
-const randomBetween = (min: number, max: number) => min + Math.random() * (max - min);
 
 export function mountParticleField(
   canvas: HTMLCanvasElement,
   host: HTMLElement,
   options: ParticleFieldOptions = {},
 ): ParticleFieldMount {
-  const config = resolveParticleFieldConfig(options);
+  const narrative=host.dataset.particleScene==='first-spark';
+  const config = resolveParticleFieldConfig(narrative?{...options,phases:{shapeEnd:sparkStory.approach,gatherEnd:sparkStory.contact,coreEnd:sparkStory.holdEnd,fadeEnd:sparkStory.fadeEnd},gatherRadius:sparkParticles.coreRadius}:options);
+  let seed:number=sparkParticles.seed;
+  const random=()=>{if(!narrative)return Math.random();seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  const between=(min:number,max:number)=>min+random()*(max-min);
   const renderer = config.enabled ? createParticleRenderer(canvas, config.colors, config.bloomScale) : null;
+  const probeEnabled=new URLSearchParams(location.search).has('scenePerf');
+  const inputFrames:object[]=[];let trustedInputs=0,syntheticInputs=0;
+  const speedStats=()=>{const speeds=particles.map(p=>Math.hypot(p.vx,p.vy)).sort((a,b)=>a-b);return {p50:speeds[Math.floor(speeds.length*.5)]??0,p95:speeds[Math.floor(speeds.length*.95)]??0,max:speeds.at(-1)??0};};
+  const perf=sceneReadiness(narrative?'spark-particles':'home-particles');perf.mark('request');const trail=new PointerTrail();let hasPainted=false;let renderCount=0;
   let cleaned = false;
   let sceneProgress = 0;
   let sceneFocus: NormalizedPoint | null = null;
@@ -50,8 +62,8 @@ export function mountParticleField(
   const eventSource = host.parentElement ?? host;
   host.style.setProperty('--particle-shape-x', `${config.shape.center.x * 100}%`);
   host.style.setProperty('--particle-shape-y', `${config.shape.center.y * 100}%`);
-  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let reducedMotion = motionQuery.matches;
+
+  let reducedMotion = false;
   let visible = true;
   let pageVisible = !document.hidden;
   let running = false;
@@ -62,6 +74,7 @@ export function mountParticleField(
   let pointer: { x: number; y: number; type: string } | null = null;
   let touchActiveUntil = 0;
   let pointerFocus: { x: number; y: number } | null = null;
+  let previousPointer: { x: number; y: number } | null = null;
   let shapeMix = 0;
   let shapeReported = false;
   let phaseReported = '';
@@ -89,10 +102,9 @@ export function mountParticleField(
 
   const makeHome = (index: number) => {
     const region = config.region;
-    // A broad field plus a denser lower-centre cloud, kept behind the main title.
     if (index % 5 < 2) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = Math.sqrt(-2 * Math.log(Math.max(.0001, Math.random())));
+      const angle = random() * Math.PI * 2;
+      const radius = Math.sqrt(-2 * Math.log(Math.max(.0001, random())));
       return {
         x: Math.min(region.x + region.width, Math.max(region.x,
           config.shape.center.x + Math.cos(angle) * radius * .2)) * width,
@@ -101,12 +113,14 @@ export function mountParticleField(
       };
     }
     return {
-      x: (region.x + Math.random() * region.width) * width,
-      y: (region.y + Math.random() * region.height) * height,
+      x: (region.x + random() * region.width) * width,
+      y: (region.y + random() * region.height) * height,
     };
   };
 
   const rebuildParticles = () => {
+    seed=sparkParticles.seed;
+    lastNarrativeProgress = -1;
     const count = particleCount();
     const shapeCount = Math.round(count * config.shape.particleRatio);
     const shapeScale = Math.min(1.15, Math.max(.68, height / 1000));
@@ -114,7 +128,7 @@ export function mountParticleField(
     const targets = createShapeTargets(shapeCount, { ...config.shape, size: config.shape.size * shapeScale });
     particles = Array.from({ length: count }, (_, index) => {
       const home = makeHome(index);
-      const depth = Math.random();
+      const depth = random();
       return {
         x: home.x,
         y: home.y,
@@ -122,15 +136,15 @@ export function mountParticleField(
         homeY: home.y,
         vx: 0,
         vy: 0,
-        radius: randomBetween(config.minRadius, config.maxRadius),
+        radius: between(config.minRadius, config.maxRadius),
         depth,
-        colorIndex: Math.floor(Math.random() * config.colors.length),
+        colorIndex: Math.floor(random() * config.colors.length),
         alpha: .2 + depth * .7,
-        phase: Math.random() * Math.PI * 2,
-        orbitAngle: Math.random() * Math.PI * 2,
-        orbitRadius: Math.sqrt(-2 * Math.log(Math.max(.0001, Math.random()))) * config.gatherRadius * .5 / .35,
-        gatherDelay: Math.random() * .28,
-        twinkle: randomBetween(.45, 1.35),
+        phase: random() * Math.PI * 2,
+        orbitAngle: random() * Math.PI * 2,
+        orbitRadius: Math.sqrt(-2 * Math.log(Math.max(.0001, random()))) * config.gatherRadius * .5 / .35,
+        gatherDelay: random() * .28,
+        twinkle: between(.45, 1.35),
         streak: index % 29 === 0,
         shapeTarget: targets[index],
       };
@@ -143,10 +157,10 @@ export function mountParticleField(
     const fade = sceneProgress <= coreEnd ? 1 : 1 - smooth((sceneProgress - coreEnd) / Math.max(.001, fadeEnd - coreEnd));
     const bloom = sceneProgress < shapeEnd ? shapeMix * .45 : smooth((sceneProgress - (gatherEnd - .2)) / .2);
     for (const particle of particles) {
-      particle.alpha = fade * (.55 + particle.depth * .4) *
+      particle.alpha = fade * (particle.narrativeAlpha ?? 1) * (.55 + particle.depth * .4) *
         (.88 + Math.sin(time * .0012 * particle.twinkle + particle.phase) * .12);
     }
-    renderer.render(particles, config.opacity, bloom);
+    renderer.render(particles, config.opacity, bloom);renderCount++;if(!hasPainted){hasPainted=true;perf.mark('first-render');perf.mark('interactive');}
   };
 
   const resize = () => {
@@ -171,18 +185,40 @@ export function mountParticleField(
     return 1;
   };
 
+  let lastNarrativeProgress = -1, lastNarrativeFocusX = -1, lastNarrativeFocusY = -1, lastNarrativeWidth = -1, lastNarrativeHeight = -1;
+  const updateNarrative=()=>{
+    const focus=sceneFocus??{x:.5,y:.63};
+    if(sceneProgress === lastNarrativeProgress && focus.x === lastNarrativeFocusX && focus.y === lastNarrativeFocusY && width === lastNarrativeWidth && height === lastNarrativeHeight) return;
+    lastNarrativeProgress = sceneProgress; lastNarrativeFocusX = focus.x; lastNarrativeFocusY = focus.y; lastNarrativeWidth = width; lastNarrativeHeight = height;
+    const size = { width, height }, count = particles.length;
+    const invWidth = 1 / width, invHeight = 1 / height;
+    for (let i = 0; i < count; i++) {
+      const p = particles[i]!;
+      const home = { x: p.homeX * invWidth, y: p.homeY * invHeight };
+      const pos = sparkPosition(i, home, focus, size, sceneProgress);
+      p.x = pos.x; p.y = pos.y; p.vx = 0; p.vy = 0; p.narrativeAlpha = pos.alpha;
+      if (i % 23 === 0) {
+        const next = sparkPosition(i, home, focus, size, sceneProgress + .003);
+        p.vx = next.x - pos.x; p.vy = next.y - pos.y; p.streak = true;
+      }
+    }
+  };
   const update = (time: number) => {
+    if(narrative){updateNarrative();render(time);return;}
+    const seconds=Math.min(.05,Math.max(0,(time-lastTime)/1000));
+    if(pointerConfig.mode!=='shape'){
+      const before=probeEnabled?speedStats():null;
+      const segments=trail.consume(time);for(let i=0;i<particles.length;i++){const p=particles[i];p.narrativeAlpha=advanceDust(p,seconds,time/1000,width,height,segments);p.streak=i%29===0&&Math.hypot(p.vx,p.vy)>65;}
+      if(probeEnabled){inputFrames.push({time,dt:seconds,segments:segments.map(s=>({span:s.b.t-s.a.t,length:Math.hypot(s.b.x-s.a.x,s.b.y-s.a.y),age:time-s.b.t})),trail:{...trail.diagnostics},before,after:speedStats()});if(inputFrames.length>120)inputFrames.shift();}
+      lastTime=time;render(time);return;
+    }
     const delta = Math.min(2, (time - lastTime) / 16.667);
     lastTime = time;
     const wantedShape = pointerStrength(time);
     shapeMix += (wantedShape - shapeMix) * (wantedShape > shapeMix ? .085 : .035) * delta;
     reportShape(shapeMix > .16);
-    if (pointer) {
-      pointerFocus ??= { x: pointer.x, y: pointer.y };
-      const follow = 1 - Math.pow(1 - pointerConfig.follow, delta);
-      pointerFocus.x += (pointer.x - pointerFocus.x) * follow;
-      pointerFocus.y += (pointer.y - pointerFocus.y) * follow;
-    } else if (shapeMix < .001) pointerFocus = null;
+    pointerFocus = pointer ? {x:pointer.x,y:pointer.y} : null;
+    if (!pointerFocus) previousPointer = null;
 
     const gathering = smooth((sceneProgress - config.phases.shapeEnd) /
       Math.max(.001, config.phases.gatherEnd - config.phases.shapeEnd));
@@ -199,11 +235,12 @@ export function mountParticleField(
       if (pointerConfig.mode === 'shape' && particle.shapeTarget && pointerFocus && shapeMix > .001) {
         targetX += (pointerFocus.x + particle.shapeTarget.x - targetX) * shapeMix;
         targetY += (pointerFocus.y + particle.shapeTarget.y - targetY) * shapeMix;
-      } else if (pointerFocus && shapeMix > .001) {
-        const influence = pointerInfluence(particle.homeX, particle.homeY, pointerFocus.x, pointerFocus.y) * shapeMix;
-        targetX += (pointerFocus.x - targetX) * influence;
-        targetY += (pointerFocus.y - targetY) * influence;
+      } else if (pointerFocus && wantedShape > 0) {
+        const influence = pointerInfluence(particle.x, particle.y, pointerFocus.x, pointerFocus.y, previousPointer ?? pointerFocus);
+        particle.vx += influence.impulseX + ((pointerFocus.x-particle.x)*influence.pull*.018 + influence.swirlX)*delta;
+        particle.vy += influence.impulseY + ((pointerFocus.y-particle.y)*influence.pull*.018 + influence.swirlY)*delta;
       }
+
       if (gathering > .001) {
         const localGather = smooth((gathering - particle.gatherDelay) / (1 - particle.gatherDelay));
         const orbit = particle.orbitRadius * (1 - localGather * .65);
@@ -221,6 +258,7 @@ export function mountParticleField(
       particle.x += particle.vx * delta;
       particle.y += particle.vy * delta;
     }
+    previousPointer = pointerFocus ? {...pointerFocus} : null;
     render(time);
   };
 
@@ -260,6 +298,7 @@ export function mountParticleField(
   };
 
   const setPointer = (event: PointerEvent) => {
+    if (narrative || reducedMotion || !pageVisible || !visible) return;
     const bounds = host.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
@@ -269,22 +308,44 @@ export function mountParticleField(
       return;
     }
     pointer = { x, y, type: event.pointerType };
+    if(probeEnabled){if(event.isTrusted)trustedInputs++;else syntheticInputs++;}
+    for(const sample of pointerSamples(event,bounds,performance.now()))trail.add(sample);
     if (event.pointerType === 'touch') touchActiveUntil = performance.now() + 1600;
     host.dataset.pointerActive = 'true';
   };
   const clearPointer = (event?: PointerEvent) => {
     if (event?.type !== 'pointercancel' && event?.pointerType === 'touch' && performance.now() < touchActiveUntil) return;
-    pointer = null;
+    trail.clear();pointer = null;
+    previousPointer = null;
     host.dataset.pointerActive = 'false';
   };
-  const handleVisibility = () => { pageVisible = !document.hidden; syncAnimation(); };
-  const handleMotion = (event: MediaQueryListEvent) => {
-    reducedMotion = event.matches;
-    pointer = null;
-    shapeMix = 0;
-    reportShape(false);
+  const handleVisibility = () => { trail.clear();pageVisible = !document.hidden; syncAnimation(); };
+  const handlePageHide = () => { trail.clear();pageVisible = false; syncAnimation(); };
+  const handlePageShow = () => { pageVisible = !document.hidden; syncAnimation(); };
+
+  // Subscribe to unified motion controller
+  const unsubscribeMotion = subscribeMotion((m: MotionState) => {
+    reducedMotion = m.isReduced;
+    if (reducedMotion) {
+      lastNarrativeProgress = -1;
+      trail.clear();
+      pointer = null;
+      pointerFocus = null;
+      previousPointer = null;
+      sceneProgress = 0;
+      sceneFocus = null;
+      shapeMix = 0;
+      host.dataset.pointerActive = 'false';
+      for (const particle of particles) {
+        particle.x = particle.homeX;
+        particle.y = particle.homeY;
+        particle.vx = 0;
+        particle.vy = 0;
+      }
+      reportShape(false);
+    }
     syncAnimation();
-  };
+  });
 
   const resizeObserver = new ResizeObserver(resize);
   const intersectionObserver = new IntersectionObserver(([entry]) => {
@@ -299,9 +360,11 @@ export function mountParticleField(
   eventSource.addEventListener('pointerup', clearPointer);
   eventSource.addEventListener('pointercancel', clearPointer);
   document.addEventListener('visibilitychange', handleVisibility);
-  motionQuery.addEventListener('change', handleMotion);
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('pageshow', handlePageShow);
   host.dataset.pointerActive = 'false';
   host.dataset.shapeActive = 'false';
+  if(probeEnabled)(host as any).particleSnapshot=()=>({progress:sceneProgress,renderCount,input:{trustedInputs,syntheticInputs,frames:inputFrames},particles:particles.map((p,i)=>({id:i,x:p.x,y:p.y,vx:p.vx,vy:p.vy,alpha:p.alpha,homeX:p.homeX,homeY:p.homeY}))});
   resize();
   syncAnimation();
 
@@ -310,6 +373,7 @@ export function mountParticleField(
     cleaned = true;
     running = false;
     cancelAnimationFrame(frame);
+    unsubscribeMotion();
     resizeObserver.disconnect();
     intersectionObserver.disconnect();
     eventSource.removeEventListener('pointermove', setPointer);
@@ -318,7 +382,8 @@ export function mountParticleField(
     eventSource.removeEventListener('pointerup', clearPointer);
     eventSource.removeEventListener('pointercancel', clearPointer);
     document.removeEventListener('visibilitychange', handleVisibility);
-    motionQuery.removeEventListener('change', handleMotion);
+    window.removeEventListener('pagehide', handlePageHide);
+    window.removeEventListener('pageshow', handlePageShow);
     renderer.clear();
     host.dataset.particleState = 'disconnected';
   }) as ParticleFieldMount;
@@ -330,8 +395,12 @@ export function mountParticleField(
     else if (scene.focus && Number.isFinite(scene.focus.x) && Number.isFinite(scene.focus.y)) {
       sceneFocus = { x: clamp01(scene.focus.x), y: clamp01(scene.focus.y) };
     }
+    // Progress is consumed by the single RAF; callbacks never draw.
     reportPhase(currentPhase());
-    if (wasHidden !== (sceneProgress >= config.phases.fadeEnd)) syncAnimation();
+    if (wasHidden !== (sceneProgress >= config.phases.fadeEnd)) {
+      if(narrative&&sceneProgress>=config.phases.fadeEnd){cancelAnimationFrame(frame);running=false;frame=requestAnimationFrame(()=>{frame=0;updateNarrative();render();});}
+      else syncAnimation();
+    }
   };
   cleanup.resetScene = () => {
     const wasHidden = sceneProgress >= config.phases.fadeEnd;

@@ -1,0 +1,9 @@
+---
+interface Props { steps?: string[] }
+const { steps } = Astro.props;
+---
+{steps && steps.length > 0 && <ol class="project-workflow" aria-label="完整工作流程">{steps.map(step => <li>{step}</li>)}</ol>}
+<style>
+.project-workflow{display:flex;flex-wrap:wrap;gap:12px 0;padding:0;margin:0 0 32px;list-style:none;font-size:12px;line-height:1.8;color:var(--muted);}
+.project-workflow li:not(:last-child)::after{content:"→";margin:0 14px;color:#8b9dae;}
+</style>

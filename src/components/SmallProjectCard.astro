@@ -1,0 +1,31 @@
+---
+import type {SmallProject} from '../data/small-projects';
+import {url} from '../lib/urls';
+interface Props {project:SmallProject}
+const {project}=Astro.props;
+---
+<article class="small-project" id={project.id} data-small-project>
+ {project.cover&&<img class="small-project-cover" src={url(project.cover.src)} alt={project.cover.alt} width={project.cover.width} height={project.cover.height} loading="lazy" decoding="async"/>}
+ <div class="small-project-body">
+  <p class="eyebrow">{project.status}{project.date&&<> · <time datetime={project.date}>{project.date}</time></>}</p>
+  <h2>{project.title}</h2><p>{project.summary}</p>
+  <ul class="small-project-tags" aria-label="项目标签">{project.tags.map(tag=><li>{tag}</li>)}</ul>
+  <details><summary>作品详情</summary><p>{project.description}</p>
+   {project.media?.map(media=><figure>
+    {media.kind==='recording'?<video src={url(media.src)} controls playsinline preload="none" width={media.width} height={media.height} aria-label={media.alt}/>:<a href={url(media.src)} target="_blank" rel="noopener noreferrer"><img src={url(media.src)} alt={media.alt} width={media.width} height={media.height} loading="lazy" decoding="async"/></a>}
+    <figcaption>{media.caption} <span>{media.kind==='concept'?'概念图':media.dataMode==='fixture'?'演示数据':media.dataMode==='artwork'?'视觉作品':'真实界面'}</span>{media.commit&&<a href={project.sourceUrl+'/commit/'+media.commit} target="_blank" rel="noopener noreferrer">取材版本 {media.commit.slice(0,7)} ↗</a>}</figcaption>
+   </figure>)}
+  </details>
+  <div class="small-project-links"><a class="text-link" href={project.sourceUrl} target="_blank" rel="noopener noreferrer">源码 ↗</a>{project.demoUrl&&<a class="text-link" href={project.demoUrl} target="_blank" rel="noopener noreferrer">体验作品 ↗</a>}</div>
+ </div>
+</article>
+<style>
+.small-project{border:1px solid var(--line,#e0e4ec);border-radius:10px;overflow:hidden;scroll-margin-top:110px;min-width:0;background:#ffffff80}
+.small-project-cover{width:100%;height:auto;display:block;aspect-ratio:16/10;object-fit:contain;background:#f0f3f7}
+.small-project-body{padding:26px}.small-project h2{font-size:26px;font-weight:450;line-height:1.4;margin:14px 0}.small-project p{font-size:14px;line-height:1.9;color:var(--muted);overflow-wrap:anywhere}
+.small-project-tags{display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:18px 0;font-size:11px;color:var(--muted)}.small-project-tags li{background:#eef1f6;border-radius:3px;padding:4px 8px}
+.small-project details{border-top:1px solid #e0e4ec;padding-top:16px}.small-project summary{cursor:pointer;font-size:13px;min-height:32px}.small-project details p{margin:12px 0}
+.small-project figure{margin:18px 0}.small-project figure img,.small-project video{display:block;width:100%;height:auto;border-radius:5px}.small-project figcaption{font-size:11px;line-height:1.8;color:var(--muted);margin-top:10px}.small-project figcaption span,.small-project figcaption a{display:block}
+.small-project-links{display:flex;gap:24px;flex-wrap:wrap;margin-top:22px;font-size:12px}
+@media(max-width:640px){.small-project-body{padding:20px}}
+</style>

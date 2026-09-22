@@ -1,0 +1,49 @@
+{
+  "node": "v24.21.0",
+  "sha": "dd32262a7aa1dd8253349d29e574ba74f2c2a242",
+  "label": "before",
+  "rows": [
+    {
+      "name": "home",
+      "repeat": 0,
+      "constructionMs": 407.9712,
+      "stepP50": 2.1173,
+      "stepP95": 2.8203999999999496
+    },
+    {
+      "name": "cove",
+      "repeat": 0,
+      "constructionMs": 938.4195,
+      "stepP50": 5.26700000000028,
+      "stepP95": 5.625600000000304
+    },
+    {
+      "name": "home",
+      "repeat": 1,
+      "constructionMs": 377.3042999999998,
+      "stepP50": 2.1030000000000655,
+      "stepP95": 2.328899999999976
+    },
+    {
+      "name": "cove",
+      "repeat": 1,
+      "constructionMs": 923.2951000000003,
+      "stepP50": 5.264400000000023,
+      "stepP95": 5.608300000000781
+    },
+    {
+      "name": "home",
+      "repeat": 2,
+      "constructionMs": 378.03800000000047,
+      "stepP50": 2.0913000000000466,
+      "stepP95": 2.4673000000002503
+    },
+    {
+      "name": "cove",
+      "repeat": 2,
+      "constructionMs": 923.9755999999998,
+      "stepP50": 5.192000000000007,
+      "stepP95": 5.592399999999543
+    }
+  ]
+}

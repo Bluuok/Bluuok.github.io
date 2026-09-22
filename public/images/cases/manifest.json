@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-09-19T10:39:23.221Z",
+  "versions": {
+    "Clawtide": "e2f091b83df806e7b19e3de69edca0baf0b3a6d8",
+    "ThreadCove": "cd9462a9b52dad708b6f3a03edbdef57c2952553"
+  },
+  "bun": "1.4.2",
+  "mode": "Actual product UI, local synthetic test data. ThreadCove reply is a local SSE fixture, not a live model.",
+  "poster": "Original paper-hand artwork composed as a static preview.",
+  "files": [
+    "clawtide-chat.jpg",
+    "clawtide-tasks.jpg",
+    "threadcove-empty.jpg",
+    "threadcove-conversation.jpg",
+    "first-spark-cover.jpg"
+  ]
+}

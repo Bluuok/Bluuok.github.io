@@ -6,30 +6,36 @@ export interface RenderParticle {
 interface SpriteSet { core: HTMLCanvasElement; glow: HTMLCanvasElement }
 
 const makeSprite = (color: string, glow: boolean): HTMLCanvasElement => {
-  const size = glow ? 32 : 12;
+  const size = glow ? 20 : 10;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const context = canvas.getContext('2d')!;
   const radius = size / 2;
-  // Apply opacity as a mask so any valid CSS color works, not only six-digit hex.
-  context.fillStyle = glow ? color : '#ffffff';
-  context.fillRect(0, 0, size, size);
-  context.globalCompositeOperation = 'destination-in';
-  const mask = context.createRadialGradient(radius, radius, 0, radius, radius, radius);
-  mask.addColorStop(0, 'rgb(0 0 0 / 1)');
-  mask.addColorStop(.12, `rgb(0 0 0 / ${glow ? .55 : .85})`);
-  mask.addColorStop(.42, `rgb(0 0 0 / ${glow ? .14 : .3})`);
-  mask.addColorStop(1, 'rgb(0 0 0 / 0)');
-  context.fillStyle = mask;
-  context.fillRect(0, 0, size, size);
-  context.globalCompositeOperation = 'source-over';
-  const core = context.createRadialGradient(radius, radius, 0, radius, radius, radius * .12);
-  core.addColorStop(0, 'rgb(255 255 255 / .98)');
-  core.addColorStop(.25, 'rgb(245 249 255 / .82)');
-  core.addColorStop(1, 'rgb(255 255 255 / 0)');
-  context.fillStyle = core;
-  context.fillRect(0, 0, size, size);
+
+  if (glow) {
+    // Soft short atmospheric aura
+    const grad = context.createRadialGradient(radius, radius, 0, radius, radius, radius);
+    grad.addColorStop(0, color);
+    grad.addColorStop(0.35, color);
+    grad.addColorStop(1, 'transparent');
+    context.fillStyle = grad;
+    context.globalAlpha = 0.35;
+    context.beginPath();
+    context.arc(radius, radius, radius, 0, Math.PI * 2);
+    context.fill();
+  } else {
+    // Solid tiny bright spark: solid saturated core (100% color at center), short soft falloff, no hollow ring
+    const grad = context.createRadialGradient(radius, radius, 0, radius, radius, radius);
+    grad.addColorStop(0, color);
+    grad.addColorStop(0.5, color);
+    grad.addColorStop(0.8, color);
+    grad.addColorStop(1, 'transparent');
+    context.fillStyle = grad;
+    context.beginPath();
+    context.arc(radius, radius, radius, 0, Math.PI * 2);
+    context.fill();
+  }
   return canvas;
 };
 
@@ -71,40 +77,35 @@ export function createParticleRenderer(canvas: HTMLCanvasElement, colors: readon
     bloomContext.save();
     bloomContext.scale(bloomScale, bloomScale);
     for (const particle of particles) {
-      if (particle.alpha <= .01 || particle.depth < .9) continue;
+      if (particle.alpha <= .01 || particle.depth < .5) continue;
       const sprite = sprites[particle.colorIndex % sprites.length] ?? sprites[0];
       if (!sprite) continue;
-      const size = (2 + particle.radius * 3);
-      bloomContext.globalAlpha = particle.alpha * opacity * (.12 + bloom * .45);
+      const size = (2.2 + particle.radius * 2.8) * (0.8 + particle.depth * 0.5);
+      bloomContext.globalAlpha = particle.alpha * opacity * (.10 + bloom * .25);
       bloomContext.drawImage(sprite.glow, particle.x - size / 2, particle.y - size / 2, size, size);
     }
     bloomContext.restore();
     context.save();
-    context.globalAlpha = Math.min(1, .55 + bloom * .55);
+    context.globalAlpha = Math.min(1, .45 + bloom * .35);
     context.drawImage(bloomCanvas, 0, 0, bloomCanvas.width, bloomCanvas.height, 0, 0, width, height);
     context.globalAlpha = 1;
-    context.fillStyle = '#fff';
     for (const particle of particles) {
       if (particle.alpha <= .01) continue;
       const sprite = sprites[particle.colorIndex % sprites.length] ?? sprites[0];
       if (!sprite) continue;
-      const size = particle.radius * 2;
-      context.globalAlpha = Math.min(1, particle.alpha * opacity * (1 + particle.depth * .7));
-      if (particle.streak && Math.abs(particle.vx) + Math.abs(particle.vy) > .5) {
-        context.strokeStyle = colors[particle.colorIndex % colors.length] ?? '#698cf5';
-        context.lineWidth = Math.max(.45, particle.radius * .65);
+      context.globalAlpha = Math.min(1, particle.alpha * opacity * (1.0 + particle.depth * .5));
+      if (particle.streak && Math.abs(particle.vx) + Math.abs(particle.vy) > .4) {
+        context.strokeStyle = colors[particle.colorIndex % colors.length] ?? '#5b86f5';
+        context.lineWidth = Math.max(.4, particle.radius * .55);
         context.beginPath();
         context.moveTo(particle.x, particle.y);
         const speed = Math.max(1, Math.hypot(particle.vx, particle.vy));
-        const tail = Math.min(9, speed * 1.2);
+        const tail = Math.min(7, speed * 1.0);
         context.lineTo(particle.x - particle.vx / speed * tail, particle.y - particle.vy / speed * tail);
         context.stroke();
-      } else {
-        // Diameter is measured directly in CSS pixels, without a large disk.
-        context.fillStyle = colors[particle.colorIndex % colors.length] ?? '#698cf5';
-        const glint = size;
-        context.fillRect(particle.x - glint / 2, particle.y - glint / 2, glint, glint);
       }
+      const drawSize = (1.1 + particle.radius * 1.8) * (0.75 + particle.depth * 0.45);
+      context.drawImage(sprite.core, particle.x - drawSize / 2, particle.y - drawSize / 2, drawSize, drawSize);
     }
     context.restore();
   };
