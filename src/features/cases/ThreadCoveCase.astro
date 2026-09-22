@@ -2,6 +2,7 @@
 import TypeLine from '../../components/TypeLine.astro';
 import type { CoreProject } from '../../data/projects';
 import CaseEvidence from '../../components/CaseEvidence.astro';
+import ProjectWorkflow from '../../components/ProjectWorkflow.astro';
 import CaseClosing from '../../components/CaseClosing.astro';
 import './cases.css';
 import { coveStages } from '../../data/studio-art';
@@ -12,7 +13,7 @@ const sheets = coveStages;
 <article class="studio-case thread-case container" id="overview">
   <nav class="case-chapters" aria-label="案例章节"><span>02 / THREADCOVE</span><a href="#interface">真实界面</a><a href="#mechanism">研究过程</a><a href="#tradeoffs">工程取舍</a></nav>
   <header class="research-masthead">
-    <div><p class="eyebrow">FIELDNOTES / 线索的编织</p><h1>{project.name}</h1><p class="case-lead"><TypeLine text="把好奇，留在可以继续的地方。"/></p></div>
+    <div><p class="eyebrow">FIELDNOTES / 线索的编织</p><h1>{project.name}</h1><p class="case-lead"><TypeLine text={project.summary}/></p></div>
     <p class="research-abstract">{project.description}<br /><a class="text-link" href="#interface">走进工作台 ↓</a></p>
   </header>
   <section class="research-desk" aria-label="研究过程的纸页概念示意" data-research-desk data-selection="0">
@@ -29,7 +30,8 @@ const sheets = coveStages;
   </section>
   <CaseEvidence project={project}/>
   <section class="case-section research-sequence" id="mechanism">
-    <div class="case-section-heading"><div><p class="eyebrow">02 / A RESEARCH THREAD</p><h2>不是更多窗口，<br />而是更清楚的上下文。</h2></div><p>由使用者提出问题与核验结论。<br />工作台负责组织任务、事件和材料。</p></div>
+    <div class="case-section-heading"><div><p class="eyebrow">02 / A RESEARCH THREAD</p><h2>让一次提问，<br />成为持续的研究。</h2></div><p>由使用者提出问题与核验结论。<br />工作台负责组织任务、事件和材料。</p></div>
+    <ProjectWorkflow steps={project.workflow}/>
     {project.mechanisms.map(m => <article><div><span class="step-number">{m.step}</span><span class="eyebrow">{m.tag}</span></div><h3>{m.title}</h3><p>{m.desc}</p></article>)}
   </section>
   <section class="case-section" id="tradeoffs"><p class="eyebrow">03 / MARGINAL NOTES</p><h2>工具背后的三个选择。</h2><div class="engineering-notes">{project.tradeoffs.map((t,i) => <article><span class="step-number">0{i+1}</span><div><h3>{t.title}</h3><p>{t.summary}</p><p class="note-detail">{t.detail}</p><a class="text-link" href={t.sourceUrl} target="_blank" rel="noopener noreferrer">{t.sourceRef} ↗</a></div></article>)}</div></section>

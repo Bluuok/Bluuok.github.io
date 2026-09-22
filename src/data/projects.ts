@@ -1,48 +1,53 @@
 export interface ProjectMedia {
-  kind:'concept'|'screenshot'|'recording'; src:string; alt:string; caption:string;
-  commit:string; width:number; height:number; dataMode:'fixture'|'live'|'artwork';
+  kind:'concept'|'screenshot'|'recording'; src:string; alt:string; caption:string; label?:string;
+  commit?:string; width:number; height:number; dataMode:'fixture'|'live'|'artwork';
 }
 export interface CoreProject {
   kind: 'case'; featured: boolean;
   id:string;name:string;index:string;cover:'orbit'|'ribbon';category:string;
   summary:string;description:string;tags:string[];sourceUrl:string;demoUrl?:string;
   image?:string;imageAlt?:string;caseKind:'clawtide'|'threadcove';verifiedCommit:string;verifiedDate:string;
-  media:ProjectMedia[];
+  media:ProjectMedia[]; mediaNote?:string; mediaHeading?:string; workflow?:string[];
   mechanisms:{step:string;title:string;desc:string;tag:string}[];
   tradeoffs:{title:string;summary:string;detail:string;sourceRef:string;sourceUrl:string}[];
 }
-const clawCommit='e2f091b83df806e7b19e3de69edca0baf0b3a6d8';
-const threadCommit='cd9462a9b52dad708b6f3a03edbdef57c2952553';
+const clawCommit='7ff39bab5d8b3e5695cd49bb05070285a480cce6';
+const threadCommit='c21b9e28cd38e77e05c60d4f41a7ec9b90f4dddd';
 const reference=(repo:string,commit:string)=>`https://github.com/Bluuok/${repo}/blob/${commit}/README.md`;
 export const coreProjects:CoreProject[]=[{
   kind:'case',featured:true,id:'clawtide',name:'Clawtide',index:'01',cover:'orbit',category:'SELECTED WORK / 01',caseKind:'clawtide',
-  summary:'让数字员工，在自己的工作区里持续工作。',
-  description:'一个自托管、多用户的 AI 数字员工平台。Web、即时消息与定时任务连接同一运行时，身份与工作区边界分别管理。',
-  tags:['自托管','工作区与权限','主动 / 被动触发'],sourceUrl:'https://github.com/Bluuok/Clawtide',verifiedCommit:clawCommit,verifiedDate:'2026-09-16',
+  summary:'让灵感有回响，让工作有着落。',
+  description:'Clawtide 是一个支持自托管的 AI 数字员工平台，将角色设定、日常对话与计划任务汇聚在统一的工作空间中。从定义一位数字员工，到交付任务、查看结果，再到调整下一次协作，让 AI 自然融入持续的工作流程。深绿与暖白构成安静的底色，海岸意象与雕塑细节，为工具界面增添一份从容。',
+  tags:['自托管','数字员工','工作区与计划任务'],sourceUrl:'https://github.com/Bluuok/Clawtide',verifiedCommit:clawCommit,verifiedDate:'2026-09-22',
+  mediaHeading:'从品牌，走进工作台。',
+  mediaNote:'品牌主视觉与本地实际页面。界面中的 integration_admin、Profile A/B 为测试展示名称。',
+  workflow:['建立工作区','设定数字员工','对话交办或安排任务','查看结果与执行记录','调整并继续协作'],
   media:[
-    {kind:'screenshot',src:'images/cases/clawtide-chat.jpg',alt:'Clawtide 真实会话界面，使用本地固定测试数据',caption:'会话与工作区。界面来自固定版本原应用；示例消息为浏览器测试数据，不代表真实模型执行。',commit:clawCommit,width:1440,height:960,dataMode:'fixture'},
-    {kind:'screenshot',src:'images/cases/clawtide-tasks.jpg',alt:'Clawtide 真实任务界面，使用本地固定测试数据',caption:'定时任务配置与列表。测试任务只在截图用的浏览器内构造，没有创建线上任务。',commit:clawCommit,width:1440,height:960,dataMode:'fixture'}],
+    {kind:'concept',label:'品牌主视觉',src:'images/cases/clawtide/01-brand.gif',alt:'Clawtide 深绿与暖白的海岸雕塑品牌动图',caption:'为重要的事，留一点空间。品牌视觉动图。',width:1200,height:560,dataMode:'artwork'},
+    {kind:'screenshot',label:'工作区',src:'images/cases/clawtide/02-workspaces.png',alt:'Clawtide 工作区实际页面，居中的海岸封面卡片用于组织会话与任务',caption:'让每项工作各得其所。',width:1440,height:900,dataMode:'fixture'},
+    {kind:'screenshot',label:'数字员工',src:'images/cases/clawtide/03-profiles.png',alt:'Clawtide 数字员工实际页面，展示身份、价值观、工作规则与工具四项设定',caption:'赋予每一次协作鲜明的个性。',width:1440,height:900,dataMode:'fixture'}],
   mechanisms:[
-    {step:'01',tag:'ENTRY',title:'从不同入口开始',desc:'Web 操作、Telegram / 飞书消息或定时发生项发起工作。'},
-    {step:'02',tag:'BOUNDARY',title:'先确定边界',desc:'Web 使用 Cookie 与 RBAC；IM 使用 Owner Gate；调度器领取发生项租约。这些不是同一种鉴权。'},
-    {step:'03',tag:'RUNTIME',title:'进入对应上下文',desc:'入口完成归属与路由决策后，把消息交给统一 AgentRuntime 执行路径。'},
-    {step:'04',tag:'FEEDBACK',title:'留下状态与结果',desc:'记录任务状态，向对应入口反馈。通知重试不应重新执行已经完成的任务。'}],
+    {step:'01',tag:'WORKSPACE',title:'工作各归其位',desc:'通过工作区组织不同主题的会话与任务。'},
+    {step:'02',tag:'PERSONALITY',title:'协作各有性格',desc:'为数字员工设定身份、工作方式与工具规则。'},
+    {step:'03',tag:'FOLLOW THROUGH',title:'任务形成闭环',desc:'从即时交办到定时执行，结果与记录都有迹可循。'}],
   tradeoffs:[
     {title:'统一执行，不抹平入口差异',summary:'把共用逻辑留在运行时，把不同的身份与路由规则留在入口。',detail:'调度租约负责领取与续约，不是用户鉴权，也不据此宣称跨机器分布式锁。',sourceRef:'入口与调度器说明',sourceUrl:reference('Clawtide',clawCommit)},
     {title:'发生项与通知，分开处理',summary:'任务执行状态与通知重试状态分开。',detail:'SQLite 单写者基础上的条件更新决定发生项领取；过期租约区分未开始与已开始的运行。',sourceRef:'R14 任务生命周期',sourceUrl:reference('Clawtide',clawCommit)},
     {title:'能力边界写在明处',summary:'Telegram、飞书与其他骨架适配器明确区分。',detail:'模型执行仍需要部署者提供有效配置。测试替身、连接测试和真实模型执行不作为同一种证据。',sourceRef:'渠道状态与运行要求',sourceUrl:reference('Clawtide',clawCommit)}]
 },{
   kind:'case',featured:true,id:'threadcove',name:'ThreadCove',index:'02',cover:'ribbon',category:'SELECTED WORK / 02',caseKind:'threadcove',
-  summary:'把零散的线索，整理成可以继续的研究。',description:'面向个人深度研究的信息分析工作台。独立任务、Agent 后端与统一事件流，在 Electron 与 Web 之间延续同一套工作方式。',
-  tags:['个人研究','任务隔离','统一事件流'],sourceUrl:'https://github.com/Bluuok/ThreadCove',verifiedCommit:threadCommit,verifiedDate:'2026-09-16',
+  summary:'让零散线索，长成自己的洞见。',description:'ThreadCove 是一个以对话为起点的 AI 研究工作台。将提问、资料探索、持续追问与成果整理连接在一起，让灵感逐渐成为清晰的结论，也让每一次探索留下可以继续的线索。',
+  tags:['对话研究','线索探索','研究档案'],sourceUrl:'https://github.com/Bluuok/ThreadCove',verifiedCommit:threadCommit,verifiedDate:'2026-09-22',
+  mediaNote:'原应用界面 · 人工准备的演示主题与本地演示服务，非在线模型研究记录。',
+  workflow:['提出问题','探索资料','追问整理','沉淀结论','保存归档','继续研究'],
   media:[
-    {kind:'screenshot',src:'images/cases/threadcove-empty.jpg',alt:'ThreadCove 真实 FIELDNOTES 工作台初始状态',caption:'原应用的 FIELDNOTES 工作台。截图使用临时工作区，没有载入个人研究材料。',commit:threadCommit,width:1440,height:1000,dataMode:'fixture'},
-    {kind:'screenshot',src:'images/cases/threadcove-conversation.jpg',alt:'ThreadCove 真实任务与对话界面，本地 SSE 测试回复',caption:'真实应用经过本地协议和后端处理测试回复。回复来自本地 SSE 替身，不是在线模型，不作为研究质量证据。',commit:threadCommit,width:1440,height:1000,dataMode:'fixture'}],
+    {kind:'screenshot',label:'提出问题',src:'images/cases/threadcove/01-research-home.png',alt:'ThreadCove 雾蓝色研究工作台首页，包含研究流程与提问入口',caption:'从一个好问题开始。',commit:threadCommit,width:1440,height:1000,dataMode:'fixture'},
+    {kind:'screenshot',label:'沿线索深入',src:'images/cases/threadcove/02-research-conversation.png',alt:'ThreadCove 对话研究界面，展示个人知识库主题的演示问答',caption:'沿着线索，让思考逐渐清晰。',commit:threadCommit,width:1440,height:1000,dataMode:'fixture'},
+    {kind:'screenshot',label:'留下研究档案',src:'images/cases/threadcove/03-research-notes.png',alt:'ThreadCove 对话旁打开资料与执行侧栏，查看研究笔记文件',caption:'将探索留下，成为下一次研究的起点。',commit:threadCommit,width:1440,height:1000,dataMode:'fixture'}],
   mechanisms:[
-    {step:'01',tag:'QUESTION',title:'先把问题留下',desc:'新建研究任务，为它分配独立的 Session 和工作目录。'},
-    {step:'02',tag:'PROCESS',title:'过程可以被看见',desc:'选择已配置的后端，查看文本、工具和状态事件；必要时停止或继续。'},
-    {step:'03',tag:'MATERIAL',title:'材料回到各自任务',desc:'来源、文件和会话内容围绕当前任务组织，不把不同任务的工作目录混在一起。'},
-    {step:'04',tag:'CONTINUE',title:'留出继续研究的入口',desc:'重新打开已有任务，阅读会话和已有产物。结论仍需要使用者判断与核验。'}],
+    {step:'01',tag:'QUESTION',title:'从问题出发',desc:'把一个模糊的想法，展开成值得探索的研究。'},
+    {step:'02',tag:'EXPLORE',title:'沿线索深入',desc:'在对话中追问，结合网页搜索与工具协作整理思路。'},
+    {step:'03',tag:'ARCHIVE',title:'留下研究档案',desc:'保存对话与任务文件，随时回到上下文继续探索。'}],
   tradeoffs:[
     {title:'每个任务，有自己的上下文',summary:'Session 与独立目录是任务隔离的基础。',detail:'这是一种工程边界，不保证模型生成的结论天然可靠。',sourceRef:'Session / Workspace',sourceUrl:reference('ThreadCove',threadCommit)},
     {title:'统一词表，而非统一能力',summary:'AgentEvent 让客户端读取同一种事件结构。',detail:'后端支持的能力依旧可能不同；事件适配不能把这些差异隐藏成能力相同。',sourceRef:'AgentBackend / EventQueue',sourceUrl:reference('ThreadCove',threadCommit)},

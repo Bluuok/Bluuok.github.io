@@ -2,6 +2,7 @@
 import TypeLine from '../../components/TypeLine.astro';
 import type {CoreProject} from '../../data/projects';
 import CaseEvidence from '../../components/CaseEvidence.astro';
+import ProjectWorkflow from '../../components/ProjectWorkflow.astro';
 import CaseClosing from '../../components/CaseClosing.astro';
 import TidalSculpture from './TidalSculpture.astro';
 import './cases.css';
@@ -9,10 +10,10 @@ interface Props {project:CoreProject}
 const {project}=Astro.props;
 ---
 <article class="studio-case claw-case container" id="overview">
-  <nav class="case-chapters" aria-label="案例章节"><span>01 / CLAWTIDE</span><a href="#interface">真实界面</a><a href="#mechanism">运行路径</a><a href="#tradeoffs">工程取舍</a></nav>
-  <header class="claw-hero"><div class="case-intro"><p class="eyebrow">TIDAL ORDER / 潮汐中的秩序</p><h1>{project.name}</h1><p class="case-lead"><TypeLine text="不同入口，让工作持续发生。"/></p><p class="case-description">{project.description}</p><div class="case-actions"><a class="button button-dark" href="#interface">看真实界面 ↓</a><a class="text-link" href={project.sourceUrl} target="_blank" rel="noopener noreferrer">查看源码 ↗</a></div></div><TidalSculpture /></header>
+  <nav class="case-chapters" aria-label="案例章节"><span>01 / CLAWTIDE</span><a href="#interface">项目展示</a><a href="#mechanism">协作流程</a><a href="#tradeoffs">工程取舍</a></nav>
+  <header class="claw-hero"><div class="case-intro"><p class="eyebrow">TIDAL ORDER / 潮汐中的秩序</p><h1>{project.name}</h1><p class="case-lead"><TypeLine text={project.summary}/></p><p class="case-description">{project.description}</p><div class="case-actions"><a class="button button-dark" href="#interface">走进工作台 ↓</a><a class="text-link" href={project.sourceUrl} target="_blank" rel="noopener noreferrer">查看源码 ↗</a></div></div><TidalSculpture /></header>
   <CaseEvidence project={project}/>
-  <section class="case-section" id="mechanism"><div class="case-section-heading"><div><p class="eyebrow">02 / ONE RUNTIME, DIFFERENT ENTRANCES</p><h2>不同入口，<br />各自清晰的路径。</h2></div><p>统一的是执行接口，<br />不是把所有边界合成一种规则。</p></div><div class="case-path">{project.mechanisms.map(m=><article><span class="step-number">{m.step}</span><p class="eyebrow">{m.tag}</p><h3>{m.title}</h3><p>{m.desc}</p></article>)}</div></section>
+  <section class="case-section" id="mechanism"><div class="case-section-heading"><div><p class="eyebrow">02 / A CONTINUOUS WORKFLOW</p><h2>让每一次协作，<br />都有清晰的着落。</h2></div><p>一个兼具工作秩序与视觉美感的<br />AI 数字员工工作台。</p></div><ProjectWorkflow steps={project.workflow}/><div class="case-path">{project.mechanisms.map(m=><article><span class="step-number">{m.step}</span><p class="eyebrow">{m.tag}</p><h3>{m.title}</h3><p>{m.desc}</p></article>)}</div></section>
   <section class="case-section" id="tradeoffs"><p class="eyebrow">03 / ENGINEERING NOTES</p><h2>把复杂性，放在合适的位置。</h2><div class="engineering-notes">{project.tradeoffs.map((t,i)=><article><span class="step-number">0{i+1}</span><div><h3>{t.title}</h3><p>{t.summary}</p><p class="note-detail">{t.detail}</p><a class="text-link" href={t.sourceUrl} target="_blank" rel="noopener noreferrer">{t.sourceRef} ↗</a></div></article>)}</div></section>
   <CaseClosing project={project}/>
 </article>

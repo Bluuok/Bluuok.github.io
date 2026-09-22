@@ -8,6 +8,6 @@ const href=url(`projects/${project.id}/`),media=project.media[0];
 ---
 <article class="project-card"><a class:list={['project-cover',{'project-cover--screen':!!media}]} href={href} aria-label={`查看 ${project.name} 项目案例`}>
   {media?<img src={url(media.src)} alt={media.alt} width={media.width} height={media.height} loading="lazy" decoding="async"/>:<ProjectArt variant={project.cover}/>}
-  <span class="cover-label">{media?'真实界面 · 本地测试数据':'概念图'}</span><span class="cover-arrow" aria-hidden="true">↗</span></a>
+  <span class="cover-label">{media ? (media.dataMode === 'artwork' ? '品牌视觉' : media.dataMode === 'fixture' ? '真实界面 · 本地演示数据' : '真实界面') : '概念图'}</span><span class="cover-arrow" aria-hidden="true">↗</span></a>
   <div class="project-info"><div class="project-title-row"><h3><a href={href}>{project.name}</a></h3><span class="project-index">{project.index}</span></div><p>{project.summary}</p><div class="project-meta"><div class="tags-row">{project.tags.map(tag=><span class="tag">{tag}</span>)}</div><a class="card-link" href={href}>查看案例 →</a></div></div>
 </article>
