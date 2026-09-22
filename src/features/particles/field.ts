@@ -116,6 +116,7 @@ export function mountParticleField(
 
   const rebuildParticles = () => {
     seed=sparkParticles.seed;
+    lastNarrativeProgress = -1;
     const count = particleCount();
     const shapeCount = Math.round(count * config.shape.particleRatio);
     const shapeScale = Math.min(1.15, Math.max(.68, height / 1000));
@@ -180,11 +181,23 @@ export function mountParticleField(
     return 1;
   };
 
+  let lastNarrativeProgress = -1, lastNarrativeFocusX = -1, lastNarrativeFocusY = -1, lastNarrativeWidth = -1, lastNarrativeHeight = -1;
   const updateNarrative=()=>{
     const focus=sceneFocus??{x:.5,y:.63};
-    particles.forEach((p,i)=>{const pos=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress);p.x=pos.x;p.y=pos.y;p.vx=p.vy=0;p.narrativeAlpha=pos.alpha;
-      if(i%23===0){const next=sparkPosition(i,{x:p.homeX/width,y:p.homeY/height},focus,{width,height},sceneProgress+.003);p.vx=next.x-pos.x;p.vy=next.y-pos.y;p.streak=true;}
-    });
+    if(sceneProgress === lastNarrativeProgress && focus.x === lastNarrativeFocusX && focus.y === lastNarrativeFocusY && width === lastNarrativeWidth && height === lastNarrativeHeight) return;
+    lastNarrativeProgress = sceneProgress; lastNarrativeFocusX = focus.x; lastNarrativeFocusY = focus.y; lastNarrativeWidth = width; lastNarrativeHeight = height;
+    const size = { width, height }, count = particles.length;
+    const invWidth = 1 / width, invHeight = 1 / height;
+    for (let i = 0; i < count; i++) {
+      const p = particles[i]!;
+      const home = { x: p.homeX * invWidth, y: p.homeY * invHeight };
+      const pos = sparkPosition(i, home, focus, size, sceneProgress);
+      p.x = pos.x; p.y = pos.y; p.vx = 0; p.vy = 0; p.narrativeAlpha = pos.alpha;
+      if (i % 23 === 0) {
+        const next = sparkPosition(i, home, focus, size, sceneProgress + .003);
+        p.vx = next.x - pos.x; p.vy = next.y - pos.y; p.streak = true;
+      }
+    }
   };
   const update = (time: number) => {
     if(narrative){updateNarrative();render(time);return;}
@@ -308,6 +321,7 @@ export function mountParticleField(
   const unsubscribeMotion = subscribeMotion((m: MotionState) => {
     reducedMotion = m.isReduced;
     if (reducedMotion) {
+      lastNarrativeProgress = -1;
       trail.clear();
       pointer = null;
       pointerFocus = null;

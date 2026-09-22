@@ -19,7 +19,6 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
   const query = (selector: string) => root.querySelector<HTMLElement>(selector)!;
   const stage = query('[data-stage]');
   const particleField = root.querySelector<ParticleSceneElement>('[data-particle-host], particle-field');
-  const fingertips = [...root.querySelectorAll<HTMLElement>('[data-fingertip]')];
   const opening = root.querySelector<HTMLElement>('[data-opening]');
   const arrival = root.querySelector<HTMLElement>('[data-arrival]');
   const images = [...root.querySelectorAll<HTMLImageElement>('.hand-art')];
@@ -28,21 +27,21 @@ export function mountIntro(root: HTMLElement, options: MountIntroOptions = {}) {
   let particleFocus: { x: number; y: number } | null = null;
   let activeTimeline: gsap.core.Timeline | null = null;
 
+  const getLayout = () => window.innerWidth < introConfig.mobileBreakpoint ? introConfig.mobile : introConfig.desktop;
+  const computeFocus = (progress: number) => {
+    const layout = getLayout();
+    const t = introConfig.timing;
+    const zoomProgress = Math.max(0, Math.min(1, (progress - t.zoom) / t.zoomDuration));
+    const easedZoom = zoomProgress < 0.5 ? 2 * zoomProgress * zoomProgress : 1 - Math.pow(-2 * zoomProgress + 2, 2) / 2;
+    return {
+      x: layout.contact.x,
+      y: layout.contact.y + layout.cameraShiftY * easedZoom,
+    };
+  };
+
   const updateParticleScene = (progress: number) => {
     if (!particleField?.setScene) return;
-
-    if (fingertips.length === 2) {
-      const stageBounds = stage.getBoundingClientRect();
-      const left = fingertips[0]!.getBoundingClientRect();
-      const right = fingertips[1]!.getBoundingClientRect();
-      if (stageBounds.width > 0 && stageBounds.height > 0) {
-        particleFocus = {
-          x: ((left.left + right.left) / 2 - stageBounds.left) / stageBounds.width,
-          y: ((left.top + right.top) / 2 - stageBounds.top) / stageBounds.height,
-        };
-
-      }
-    }
+    particleFocus = computeFocus(progress);
     particleField.setScene({ progress, focus: particleFocus });
   };
 

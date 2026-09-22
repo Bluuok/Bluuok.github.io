@@ -19,7 +19,8 @@ export interface SceneLayout {
 
 export const introConfig = {
   mobileBreakpoint: 640,
-  scrub: true,
+  // One short scrub shared by hands, camera and particles smooths discrete wheel steps.
+  scrub: .24,
   desktop: {
     contact: { x: .5, y: .63 },
     handWidth: { left: .65, right: .62 },
