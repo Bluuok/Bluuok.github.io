@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import {site} from '../../data/site';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import ClawtideCase from '../../features/cases/ClawtideCase.astro';
@@ -18,7 +19,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const pageTitle = `${project.name} — Bluuok`;
+const pageTitle = `${project.name} — ${site.name}`;
 ---
 <Layout title={pageTitle} description={project.summary}>
   <div id="top"></div>

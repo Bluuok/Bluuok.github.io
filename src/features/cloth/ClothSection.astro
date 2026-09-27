@@ -1,44 +1,123 @@
 ---
-import { generateFacetedSvgPoster } from './geometry';
+import { homeProfile } from '../../data/site';
+import { url } from '../../lib/urls';
+
+// Preserve the existing homepage feature switch and incoming #wind links.
+const portrait = url(homeProfile.portrait);
 ---
-<section class="fabric-section" id="wind" aria-labelledby="fabric-title">
-  <div class="container fabric-grid">
-    <div class="fabric-copy">
-      <p class="eyebrow">STUDY 01 / FABRIC OF THOUGHT</p>
-      <h2 id="fabric-title">看不见的风，<br />有了形状。</h2>
-      <p>从一个轻微的触碰开始。<br />让想法在材料、光线与代码之间，慢慢成形。</p>
-      <span class="fabric-note">悬挂织物 · 风与重力</span>
-    </div>
-    <div class="cloth-stage" id="cloth-stage" data-cloth-state="idle" data-pointer-hit="false">
-      <canvas class="cloth-canvas" aria-hidden="true"></canvas>
-      <div class="cloth-poster" aria-hidden="true">
-        <svg viewBox="0 0 680 400" xmlns="http://www.w3.org/2000/svg"><g set:html={generateFacetedSvgPoster()} /></svg>
+<section class="profile-section" id="wind" aria-labelledby="profile-title">
+  <div class="container profile-grid">
+    <div class="profile-copy">
+      <p class="eyebrow profile-eyebrow"><span>01 / ABOUT ME</span><span class="profile-rule" aria-hidden="true"></span></p>
+      <h2 id="profile-title">你好，<br />我是 <span>{homeProfile.name}。</span></h2>
+      <div class="profile-description">
+        <p class="profile-experience">{homeProfile.experience}</p>
+        <p>{homeProfile.introduction}</p>
       </div>
-      <div class="fabric-caption"><span aria-hidden="true">↗</span> 掠过带起风，按住拖动，松手回摆</div>
+      <p class="profile-availability"><span aria-hidden="true"></span>{homeProfile.availability}</p>
+      <span class="profile-note">IDEAS INTO REALITY</span>
+    </div>
+
+    <div class="badge-stage" id="badge-stage" data-badge-state="idle" data-grabbed="false" data-pointer-hit="false"
+      data-portrait={portrait} data-name={homeProfile.name} data-role={homeProfile.role}
+      role="group" aria-label="悬挂的个人工卡" aria-describedby="badge-description">
+      <p class="badge-sr" id="badge-description">带有 {homeProfile.name} 证件照的个人工卡。可以拖动工卡或使用轻推按钮让它摆动。</p>
+      <canvas class="badge-canvas" aria-hidden="true"></canvas>
+      <div class="badge-poster" aria-hidden="true">
+        <svg viewBox="0 0 760 780" xmlns="http://www.w3.org/2000/svg" focusable="false">
+          <defs>
+            <linearGradient id="pass-strap" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#202b40"/><stop offset=".4" stop-color="#455069"/><stop offset="1" stop-color="#29354a"/></linearGradient>
+            <linearGradient id="pass-shell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7faff"/><stop offset=".36" stop-color="#ced8e8"/><stop offset=".7" stop-color="#f1eef7"/><stop offset="1" stop-color="#ccd4e3"/></linearGradient>
+            <linearGradient id="pass-metal" x1="0" y1="0" x2="1" y2=".3"><stop stop-color="#8390a4"/><stop offset=".28" stop-color="#faffff"/><stop offset=".55" stop-color="#a0aec1"/><stop offset=".8" stop-color="#f8fbff"/><stop offset="1" stop-color="#8e9aaf"/></linearGradient>
+            <linearGradient id="pass-stock" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#edf2fc"/><stop offset=".4" stop-color="#fafbf9"/><stop offset="1" stop-color="#f0ebf6"/></linearGradient>
+            <linearGradient id="pass-gloss" x1="0" y1="0" x2="1" y2=".5"><stop stop-color="#fff" stop-opacity=".25"/><stop offset=".38" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".2"/></linearGradient>
+            <radialGradient id="pass-shadow"><stop stop-color="#526781" stop-opacity=".13"/><stop offset="1" stop-color="#526781" stop-opacity="0"/></radialGradient>
+            <clipPath id="pass-photo"><rect x="-93" y="103" width="186" height="248" rx="5"/></clipPath>
+            <pattern id="pass-weave" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 0H4M0 2H4" stroke="#dce2f2" stroke-opacity=".15" stroke-width=".5"/></pattern>
+          </defs>
+          <ellipse cx="382" cy="743" rx="218" ry="31" fill="url(#pass-shadow)"/>
+          <path d="M291-30C287 118 308 214 365 283M467-30C469 123 425 221 372 283" fill="none" stroke="url(#pass-strap)" stroke-width="23"/>
+          <path d="M291-30C287 118 308 214 365 283M467-30C469 123 425 221 372 283" fill="none" stroke="url(#pass-weave)" stroke-width="21"/>
+          <text x="302" y="130" transform="rotate(82 302 130)" fill="#d6ddec" font-size="8" font-family="sans-serif" letter-spacing="1.4">{homeProfile.name.toUpperCase()} / ✳</text>
+          <text x="449" y="77" transform="rotate(98 449 77)" fill="#d6ddec" font-size="8" font-family="sans-serif" letter-spacing="1.4">{homeProfile.name.toUpperCase()} / ✳</text>
+          <g transform="translate(369 299) rotate(-5)">
+            <rect x="-133" y="43" width="266" height="394" rx="14" fill="#51617a" opacity=".07" transform="translate(4 6)"/>
+            <rect x="-133" y="43" width="266" height="394" rx="14" fill="url(#pass-shell)" stroke="#aebed5" stroke-opacity=".6"/>
+            <rect x="-130" y="46" width="260" height="388" rx="12" fill="none" stroke="#fff" stroke-opacity=".85"/>
+            <rect x="-121" y="56" width="242" height="368" rx="9" fill="url(#pass-stock)"/>
+            <text x="-100" y="80" fill="#485267" font-size="7.5" font-weight="600" font-family="sans-serif">DIGITAL ATELIER</text>
+            <text x="100" y="80" text-anchor="end" fill="#788295" font-size="6.2" font-family="monospace">PERSONAL / 01</text>
+            <path d="M-100 91H100" stroke="#aaaecd" stroke-width=".8"/>
+            <image href={portrait} x="-93" y="103" width="186" height="248" preserveAspectRatio="xMidYMid meet" clip-path="url(#pass-photo)"/>
+            <text x="-94" y="381" fill="#252d3c" font-size="20" font-weight="600" font-family="sans-serif">{homeProfile.name}</text>
+            <text x="-94" y="394" fill="#677189" font-size="7.1" font-family="monospace">{homeProfile.role}</text>
+            <circle cx="-92" cy="410" r="1.3" fill="#74899a"/>
+            <text x="-86" y="412" fill="#798291" font-size="5.5" font-family="monospace">IDEAS INTO REALITY</text>
+            <text x="93" y="412" text-anchor="end" fill="#798291" font-size="6" font-family="monospace">01</text>
+            <rect x="-121" y="56" width="242" height="368" rx="9" fill="url(#pass-gloss)"/>
+            <rect x="-23" y="25" width="46" height="36" rx="7" fill="url(#pass-shell)" stroke="#b5c3d5"/>
+            <rect x="-14" y="39" width="28" height="7" rx="3" fill="#677487"/>
+            <ellipse cx="0" cy="0" rx="12" ry="16" fill="none" stroke="url(#pass-metal)" stroke-width="4"/>
+            <rect x="-8" y="9" width="16" height="33" rx="4" fill="url(#pass-metal)" stroke="#a7b2c3" stroke-width=".6"/>
+            <rect x="-14" y="37" width="28" height="12" rx="4" fill="url(#pass-metal)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="badge-caption">
+        <span class="badge-hint">拖动工卡，松手轻轻回摆</span>
+        <span class="badge-still">PERSONAL PASS / {homeProfile.name}</span>
+        <div class="badge-controls">
+          <button type="button" data-badge-nudge aria-label="轻推工卡；也可用左右方向键摆动" title="轻推工卡" disabled><span aria-hidden="true">↔</span></button>
+          <button type="button" data-badge-reset aria-label="复位工卡" title="复位工卡" disabled><span aria-hidden="true">↺</span></button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
+
 <style>
-  .fabric-section{padding:clamp(80px,9vw,140px) 0;position:relative;isolation:isolate;scroll-margin-top:88px;}
-  .fabric-section::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 70% 50%,rgba(140,155,235,0.08),transparent 65%),radial-gradient(circle at 30% 60%,rgba(215,190,230,0.05),transparent 55%);}
-  .fabric-grid{display:grid;grid-template-columns:.72fr 1.28fr;align-items:center;gap:36px;}
-  .fabric-copy h2{font-size:clamp(32px,4.2vw,60px);font-weight:400;line-height:1.4;letter-spacing:-.05em;margin:24px 0;}
-  .fabric-copy>p:not(.eyebrow){font-size:15px;line-height:2;color:var(--muted);}
-  .fabric-note{display:block;font:11px var(--font-mono);color:var(--muted);margin-top:40px;letter-spacing:.08em;}
-  .cloth-stage{position:relative;min-width:0;aspect-ratio:1.25;overflow:hidden;touch-action:pan-y pinch-zoom;}
-  .cloth-canvas,.cloth-poster{position:absolute;inset:0;width:100%;height:100%;}
-  .cloth-canvas{z-index:2;display:block;}
-  .cloth-poster{display:grid;place-items:center;pointer-events:none;background:transparent;}
-  .cloth-poster svg{width:100%;height:auto;filter:drop-shadow(0 24px 28px #252a3912);}
-  .cloth-stage:is([data-cloth-state='running'],[data-cloth-state='paused']) .cloth-poster{visibility:hidden;}
-  .cloth-stage:not([data-cloth-state='running']):not([data-cloth-state='paused']) .cloth-canvas{visibility:hidden;}
-  .fabric-caption{position:absolute;bottom:0;left:50%;translate:-50% 0;white-space:nowrap;z-index:3;font:11px var(--font-mono);letter-spacing:.05em;color:var(--muted);}
-  .fabric-caption span{display:inline-block;margin-right:12px;color:var(--violet);}
-  .cloth-stage:not([data-cloth-state='running']) .fabric-caption{visibility:hidden;}
-  @media(max-width:760px){.fabric-grid{grid-template-columns:1fr;gap:20px}.fabric-section{padding:70px 0;scroll-margin-top:140px}.fabric-copy h2{font-size:38px}.fabric-note{margin-top:22px}.cloth-stage{aspect-ratio:1.12;margin-top:10px}}
+  .profile-section { position:relative; isolation:isolate; padding:clamp(64px,7vw,108px) 0; scroll-margin-top:88px; }
+  .profile-section::before { content:''; position:absolute; inset:0; z-index:-1; background:radial-gradient(ellipse at 74% 47%,#dfe6f84d,transparent 49%),radial-gradient(ellipse at 60% 69%,#ede1ed33,transparent 40%); }
+  .profile-grid { display:grid; grid-template-columns:.86fr 1.14fr; align-items:center; gap:clamp(20px,4vw,64px); }
+  .profile-copy { padding:12px 0 32px; }
+  .profile-eyebrow { display:flex; align-items:center; gap:22px; font-size:10px; letter-spacing:.18em; }
+  .profile-rule { width:44px; height:1px; background:linear-gradient(90deg,#a8b5cd,#d8c7da); }
+  .profile-copy h2 { margin:29px 0 28px; font-size:clamp(42px,4.7vw,66px); font-weight:450; line-height:1.28; letter-spacing:-.06em; }
+  .profile-copy h2 span { background:linear-gradient(110deg,#587497 5%,#877b9f 90%); background-clip:text; -webkit-background-clip:text; color:transparent; }
+  .profile-description { max-width:29em; font-size:16px; line-height:2; color:var(--muted); }
+  .profile-description p { margin:0; }
+  .profile-description .profile-experience { margin-bottom:8px; font-weight:500; color:#424b5a; }
+  .profile-availability { display:flex; align-items:center; gap:10px; width:fit-content; margin:27px 0 0; padding:11px 15px; border:1px solid #e0e6ea; border-radius:5px; background:#ffffff80; font-size:12px; line-height:1.7; color:#59666c; }
+  .profile-availability>span { width:6px; height:6px; border-radius:50%; background:#6c9184; box-shadow:0 0 0 4px #6c918410; flex:none; }
+  .profile-note { display:block; margin-top:44px; font:9px var(--font-mono); letter-spacing:.18em; color:#959ba7; }
+  .badge-stage { position:relative; min-width:0; aspect-ratio:.98; overflow:hidden; touch-action:pan-y pinch-zoom; }
+  .badge-canvas,.badge-poster { position:absolute; inset:0; width:100%; height:100%; }
+  .badge-canvas { display:block; z-index:2; touch-action:pan-y pinch-zoom; }
+  .badge-poster { pointer-events:none; }
+  .badge-poster svg { display:block; width:100%; height:100%; }
+  .badge-stage:is([data-badge-state='running'],[data-badge-state='paused']) .badge-poster { visibility:hidden; }
+  .badge-stage:not([data-badge-state='running']):not([data-badge-state='paused']) .badge-canvas { visibility:hidden; }
+  .badge-stage[data-pointer-hit='true'] .badge-canvas { cursor:grab; }
+  .badge-stage[data-grabbed='true'] .badge-canvas { cursor:grabbing; }
+  .badge-caption { position:absolute; z-index:3; bottom:2px; left:0; right:0; display:flex; justify-content:center; align-items:center; gap:15px; min-height:32px; font-size:10px; letter-spacing:.04em; color:#8a919e; }
+  .badge-still { font:9px var(--font-mono); letter-spacing:.1em; }
+  .badge-controls { display:flex; gap:6px; }
+  .badge-controls button { display:grid; place-items:center; width:30px; height:30px; padding:0; border:1px solid #dce2ec; border-radius:50%; background:#ffffff90; color:#6c7d95; cursor:pointer; font:16px var(--font-sans); transition:background .2s,border-color .2s; }
+  .badge-controls button:hover { background:#edf1fa; border-color:#b9c8dc; }
+  .badge-controls button:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+  .badge-stage[data-badge-state='running'] .badge-still { display:none; }
+  .badge-stage:not([data-badge-state='running']) :is(.badge-hint,.badge-controls) { display:none; }
+  .badge-sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  @media(max-width:900px) { .profile-grid { gap:22px; grid-template-columns:.94fr 1.06fr; } .profile-copy h2 { font-size:43px; } .profile-description { font-size:14px; } .profile-availability { font-size:11px; padding:10px 12px; } }
+  @media(max-width:760px) { .profile-section { padding:62px 0 50px; scroll-margin-top:140px; } .profile-grid { grid-template-columns:1fr; gap:2px; } .profile-copy { padding:0; } .profile-copy h2 { margin:24px 0; font-size:43px; } .profile-description { max-width:32em; font-size:15px; } .profile-availability { margin-top:22px; font-size:11px; } .profile-note { margin-top:25px; } .badge-stage { width:min(calc(100% + 24px),510px); justify-self:center; aspect-ratio:.78; margin-top:4px; } .badge-caption { font-size:10px; gap:10px; } .badge-controls button { width:34px; height:34px; } }
 </style>
+
 <script>
-  import { ClothController } from './controller';
-  const stage=document.getElementById('cloth-stage');
-  if(stage){const controller=new ClothController(stage);controller.init();document.addEventListener('astro:before-swap',()=>controller.dispose(),{once:true});}
+  import { BadgeController } from '../badge/controller';
+  const stage = document.getElementById('badge-stage');
+  if (stage) {
+    const controller = new BadgeController(stage);
+    controller.init();
+    document.addEventListener('astro:before-swap', () => controller.dispose(), { once:true });
+  }
 </script>

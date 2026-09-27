@@ -4,13 +4,13 @@ import { startStaticPreview } from './static-preview.mjs';
 import assert from 'node:assert/strict';
 import { coreProjects } from '../src/data/projects.ts';
 
-const output = 'review-output';
+const output = process.env.STUDIO_OUTPUT ?? 'review-output';
 await mkdir(`${output}/screenshots`, { recursive: true });
 const preview=await startStaticPreview();
 const base=preview.base;
 const browser = await chromium.launch({ headless:true, args:['--enable-unsafe-swiftshader','--use-angle=swiftshader'] });
 const report = { commit:process.env.GITHUB_SHA ?? 'local', browser:browser.version(), platform:process.platform, checks:[], errors:[], notes:['Chromium software GPU in CI. Mobile sizes are viewport emulation, not physical mobile devices or field performance.'] };
-const routes = [['home','/'],['clawtide','/projects/clawtide/'],['threadcove','/projects/threadcove/'],['playground','/playground/']];
+const routes = [['home','/'],['clawtide','/projects/clawtide/'],['threadcove','/projects/threadcove/'],['playground','/playground/']].filter(([name])=>!process.env.STUDIO_ROUTE||process.env.STUDIO_ROUTE===name);
 const check = (name, ok, details='') => { report.checks.push({ name, pass:!!ok, details }); if (!ok) report.errors.push(name); };
 const screenshot = (page, name, fullPage=false) => page.screenshot({ path:`${output}/screenshots/${name}.png`, fullPage, timeout:30000 });
 async function verifyTabs(page, root, label) {
@@ -44,32 +44,37 @@ try {
         if (name === 'home') {
           check(`${label}: particles preserved`, await page.locator('particle-field canvas').count() === 1);
           check(`${label}: original hands not loaded`, !requests.some(u => /paper-hand/.test(u)));
-          const cloth = page.locator('#cloth-stage');
-          await cloth.scrollIntoViewIfNeeded();
-          await page.waitForFunction(() => document.querySelector('#cloth-stage')?.getAttribute('data-cloth-state') === 'running');
-          check(`${label}: live WebGL cloth`, await cloth.getAttribute('data-cloth-state') === 'running');
-          check(`${label}: coated satin material`, await cloth.getAttribute('data-cloth-material') === 'coated-white-satin');
-          await screenshot(page, `cloth-${viewport.width}`);
-          const bounds = await cloth.boundingBox(); let hit = false;
+          const badge = page.locator('#badge-stage');
+          await badge.scrollIntoViewIfNeeded();
+          await page.waitForFunction(() => document.querySelector('#badge-stage')?.getAttribute('data-badge-state') === 'running');
+          check(`${label}: live WebGL badge`, await badge.getAttribute('data-badge-state') === 'running');
+          const photo = await badge.getAttribute('data-portrait');
+          check(`${label}: personal photograph loaded`, await page.evaluate(async src=>{const image=new Image();image.src=src;try{await image.decode();return image.naturalWidth>0;}catch{return false;}},photo));
+          await screenshot(page, `badge-${viewport.width}`);
+          const bounds = await badge.boundingBox(); let hit = false;
           for(const x of [.35,.5,.65]) {
             await page.mouse.move(bounds.x+bounds.width*x,bounds.y+bounds.height*.5); await page.waitForTimeout(120);
-            if(await cloth.getAttribute('data-pointer-hit') === 'true') {hit=true;break;}
+            if(await badge.getAttribute('data-pointer-hit') === 'true') {hit=true;break;}
           }
-          check(`${label}: cloth raycast`,hit); await page.waitForTimeout(450);
-          await screenshot(page, `cloth-pointer-${viewport.width}`);
-          await cloth.locator('canvas').dispatchEvent('pointercancel',{pointerType:'touch'}); await page.waitForTimeout(150);
-          check(`${label}: pointer cancellation`,await cloth.getAttribute('data-pointer-hit') === 'false');
+          check(`${label}: badge raycast`,hit); await page.waitForTimeout(450);
+          await screenshot(page, `badge-pointer-${viewport.width}`);
+          await badge.locator('canvas').dispatchEvent('pointercancel',{pointerType:'touch'}); await page.waitForTimeout(150);
+          check(`${label}: pointer cancellation`,await badge.getAttribute('data-pointer-hit') === 'false');
           await page.mouse.move(2,2); await page.waitForTimeout(1300);
-          check(`${label}: pointer released`,await cloth.getAttribute('data-pointer-hit') === 'false');
+          check(`${label}: pointer released`,await badge.getAttribute('data-pointer-hit') === 'false');
+          await badge.locator('[data-badge-reset]').click();
+          await badge.locator('[data-badge-nudge]').focus();await page.keyboard.press('ArrowRight');await page.waitForTimeout(300);
+          check(`${label}: keyboard nudge moves badge`,Number(await badge.getAttribute('data-badge-angle'))>.03);
           // Wait for the actual preference-driven lifecycle transition, not a fixed
           // sleep that races software-GPU rendering. A missing transition still fails.
           await page.emulateMedia({reducedMotion:'reduce'});
-          await page.waitForFunction(() => document.querySelector('#cloth-stage')?.getAttribute('data-cloth-state') === 'static');
-          check(`${label}: reduced static`,await cloth.getAttribute('data-cloth-state') === 'static');
-          await screenshot(page,`cloth-reduced-${viewport.width}`);
+          await page.waitForFunction(() => document.querySelector('#badge-stage')?.getAttribute('data-badge-state') === 'static');
+          check(`${label}: reduced static`,await badge.getAttribute('data-badge-state') === 'static');
+          check(`${label}: reduced portrait visible`,await badge.locator('.badge-poster').isVisible());
+          await screenshot(page,`badge-reduced-${viewport.width}`);
           await page.emulateMedia({reducedMotion:'no-preference'});
-          await page.waitForFunction(() => document.querySelector('#cloth-stage')?.getAttribute('data-cloth-state') === 'running');
-          check(`${label}: resumed`,await cloth.getAttribute('data-cloth-state') === 'running');
+          await page.waitForFunction(() => document.querySelector('#badge-stage')?.getAttribute('data-badge-state') === 'running');
+          check(`${label}: resumed`,await badge.getAttribute('data-badge-state') === 'running');
         }
         if(name === 'clawtide') {
           const art = page.locator('[data-tidal]');

@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import {site} from '../data/site';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import FirstSparkSection from '../features/first-spark/FirstSparkSection.astro';
@@ -11,10 +12,10 @@ import {url} from '../lib/urls';
 const stage=smallProjects.find(project=>project.stage==='first-spark');
 const others=smallProjects.filter(project=>!project.stage);
 ---
-<Layout title="小作品与实验 — Bluuok" description="纸手、光尘与独立交互实验。随滚动，让两个指尖相遇。">
+<Layout title={`小作品与实验 — ${site.name}`} description="纸手、光尘与独立交互实验。随滚动，让两个指尖相遇。">
  <div id="top"></div><Header/>
  <main id="main" tabindex="-1">
-  <header class="container experiment-heading"><p class="eyebrow">OPEN EXPERIMENTS / BLUUOK</p><h1>小作品与实验。</h1><p><TypeLine text="两个指尖，一次相遇。"/></p><a class="text-link" href="#other-experiments">跳到其他作品 ↓</a></header>
+  <header class="container experiment-heading"><p class="eyebrow">OPEN EXPERIMENTS / {site.name.toUpperCase()}</p><h1>小作品与实验。</h1><p><TypeLine text="两个指尖，一次相遇。"/></p><a class="text-link" href="#other-experiments">跳到其他作品 ↓</a></header>
   {features.firstSpark&&stage&&<FirstSparkSection/>}
   <section id="other-experiments" class="container experiment-list" tabindex="-1" aria-label="其他小作品">
    <div class="small-project-grid">{others.map(project=><SmallProjectCard project={project}/>)}</div>

@@ -11,9 +11,9 @@ const context=await browser.newContext({viewport:{width:1440,height:1000},reduce
 const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',e=>results.errors.push(e.message));
 const snap=async(name)=>page.screenshot({path:`${out}/${name}.png`});
 try{
- for(const [name,path,selector] of [['wind','/','#cloth-stage'],['paper','/projects/threadcove/','[data-paper-cloth]']]){
+ for(const [name,path,selector] of [['badge','/','#badge-stage'],['paper','/projects/threadcove/','[data-paper-cloth]']]){
   await page.goto(preview.base+path,{waitUntil:'networkidle'});const stage=page.locator(selector);await stage.scrollIntoViewIfNeeded();
-  await page.waitForFunction(selector=>document.querySelector(selector)?.dataset.clothState==='running',selector);
+  await page.waitForFunction(([selector,state])=>document.querySelector(selector)?.dataset[state]==='running',[selector,name==='badge'?'badgeState':'clothState']);
   await page.waitForTimeout(1200);await snap(name+'-rest');
   const b=await stage.boundingBox();let hit=null;
   for(const y of [.55,.45,.65,.35]){for(const x of [.5,.4,.6,.3,.7]){

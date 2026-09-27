@@ -9,7 +9,7 @@ try{
  for(const width of [1440,390]){
   const ctx=await browser.newContext({viewport:{width,height:900},hasTouch:width===390,recordVideo:{dir}}),page=await ctx.newPage();page.setDefaultTimeout(20000);
   page.on('pageerror',e=>report.errors.push(e.message));
-  for(const [name,route,selector,state] of [['cloth','/','#cloth-stage','clothState'],['cove','/projects/threadcove/','[data-paper-cloth]','clothState'],['tidal','/projects/clawtide/','[data-tidal]','renderState']]){
+  for(const [name,route,selector,state] of [['badge','/','#badge-stage','badgeState'],['cove','/projects/threadcove/','[data-paper-cloth]','clothState'],['tidal','/projects/clawtide/','[data-tidal]','renderState']]){
    await page.goto(preview.base+route,{waitUntil:'networkidle'});const art=page.locator(selector);await art.scrollIntoViewIfNeeded();
    await page.waitForFunction(([selector,state])=>['running','ready'].includes(document.querySelector(selector)?.dataset[state]),[selector,state]);await page.waitForTimeout(800);
    await page.screenshot({path:dir+'/'+name+'-'+width+'.png'});
